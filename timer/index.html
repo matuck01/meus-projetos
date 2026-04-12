@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timer Countdown</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #111;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2rem 1.5rem;
+      border-radius: 16px;
+      transition: background 0.3s;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .display {
+      font-weight: 500;
+      letter-spacing: 4px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      transition: color 0.3s, font-size 0.2s;
+      font-size: 72px;
+      color: #f0f0f0;
+    }
+
+    .display.finished { color: #e74c3c !important; }
+
+    .progress {
+      width: 100%;
+      max-width: 440px;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: #f0f0f0;
+      transition: width 0.5s linear, background 0.3s;
+    }
+
+    .controls { display: flex; gap: 10px; }
+
+    .btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #f0f0f0;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.15); }
+    .btn:active { transform: scale(0.97); }
+    .btn.primary {
+      background: #f0f0f0;
+      color: #111;
+      border-color: #f0f0f0;
+    }
+    .btn.primary:hover { opacity: 0.85; }
+
+    .toggle-bar { display: flex; gap: 8px; }
+
+    .toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      user-select: none;
+    }
+    .toggle-btn:hover { background: rgba(255,255,255,0.12); color: #f0f0f0; }
+    .toggle-btn.open { background: #f0f0f0; color: #111; border-color: #f0f0f0; }
+    .toggle-btn .arrow { font-size: 10px; transition: transform 0.25s; display: inline-block; }
+    .toggle-btn.open .arrow { transform: rotate(180deg); }
+
+    .panel {
+      width: 100%;
+      max-width: 440px;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.35s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+    .panel.visible { max-height: 400px; opacity: 1; }
+
+    .panel-inner {
+      background: rgba(255,255,255,0.06);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .panel-inner h3 {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.45);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .custom-row { display: flex; align-items: center; gap: 12px; }
+    .custom-row label { font-size: 13px; color: rgba(255,255,255,0.55); min-width: 110px; }
+
+    .color-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+    .swatch {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.active { border-color: #fff; }
+
+    .zoom-btns { display: flex; gap: 8px; }
+    .zoom-btn {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.06);
+      color: #f0f0f0;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: inherit;
+    }
+    .zoom-btn:hover { background: rgba(255,255,255,0.12); }
+    .zoom-btn.active { background: #f0f0f0; color: #111; }
+
+    .time-inputs { display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .time-field { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .time-field label { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .time-field input[type=number] {
+      width: 68px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 500;
+      padding: 8px 4px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #f0f0f0;
+      -moz-appearance: textfield;
+      font-family: inherit;
+    }
+    .time-field input[type=number]::-webkit-inner-spin-button { display: none; }
+    .time-field input[type=number]:focus { outline: none; border-color: rgba(255,255,255,0.5); }
+    .sep { font-size: 24px; font-weight: 500; color: rgba(255,255,255,0.4); margin-top: -12px; }
+    .set-btn { width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="wrap">
+    <div class="display" id="display">00:05:00</div>
+    <div class="progress"><div class="progress-bar" id="bar" style="width:100%;"></div></div>
+
+    <div class="controls">
+      <button class="btn" id="btn-reset">Reset</button>
+      <button class="btn primary" id="btn-play">Play</button>
+    </div>
+
+    <div class="toggle-bar">
+      <button class="toggle-btn" id="tog-appear">
+        Aparência <span class="arrow">▼</span>
+      </button>
+      <button class="toggle-btn" id="tog-time">
+        Definir tempo <span class="arrow">▼</span>
+      </button>
+    </div>
+
+    <div class="panel" id="panel-appear">
+      <div class="panel-inner">
+        <h3>Aparência</h3>
+        <div class="custom-row">
+          <label>Cor de fundo</label>
+          <div class="color-swatches" id="bg-swatches">
+            <div class="swatch active" data-color="default" style="background:rgba(255,255,255,0.15); border:1.5px dashed rgba(255,255,255,0.4);" title="Padrão"></div>
+            <div class="swatch" data-color="#1a1a2e" style="background:#1a1a2e"></div>
+            <div class="swatch" data-color="#0f3460" style="background:#0f3460"></div>
+            <div class="swatch" data-color="#1b4332" style="background:#1b4332"></div>
+            <div class="swatch" data-color="#4a1942" style="background:#4a1942"></div>
+            <div class="swatch" data-color="#7f1d1d" style="background:#7f1d1d"></div>
+            <div class="swatch" data-color="#000000" style="background:#000"></div>
+            <div class="swatch" data-color="#f8f4e8" style="background:#f8f4e8; border:1px solid #aaa;"></div>
+            <div class="swatch" data-color="#ffffff" style="background:#fff; border:1px solid #aaa;"></div>
+          </div>
+        </div>
+        <div class="custom-row">
+          <label>Cor da fonte</label>
+          <div class="color-swatches" id="font-swatches">
+            <div class="swatch active" data-color="default" style="background:#f0f0f0; border:1.5px dashed rgba(255,255,255,0.4);" title="Padrão"></div>
+            <div class="swatch" data-color="#ffffff" style="background:#ffffff; border:1px solid #aaa;"></div>
+            <div class="swatch" data-color="#f1c40f" style="background:#f1c40f"></div>
+            <div class="swatch" data-color="#2ecc71" style="background:#2ecc71"></div>
+            <div class="swatch" data-color="#3498db" style="background:#3498db"></div>
+            <div class="swatch" data-color="#e74c3c" style="background:#e74c3c"></div>
+            <div class="swatch" data-color="#e67e22" style="background:#e67e22"></div>
+            <div class="swatch" data-color="#9b59b6" style="background:#9b59b6"></div>
+            <div class="swatch" data-color="#1abc9c" style="background:#1abc9c"></div>
+          </div>
+        </div>
+        <div class="custom-row">
+          <label>Zoom</label>
+          <div class="zoom-btns" id="zoom-btns">
+            <button class="zoom-btn" data-size="40">P</button>
+            <button class="zoom-btn" data-size="56">M</button>
+            <button class="zoom-btn active" data-size="72">G</button>
+            <button class="zoom-btn" data-size="96">XG</button>
+            <button class="zoom-btn" data-size="128">XXG</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-time">
+      <div class="panel-inner">
+        <h3>Definir tempo</h3>
+        <div class="time-inputs">
+          <div class="time-field">
+            <input type="number" id="inp-h" min="0" max="1" value="0">
+            <label>horas</label>
+          </div>
+          <span class="sep">:</span>
+          <div class="time-field">
+            <input type="number" id="inp-m" min="0" max="59" value="5">
+            <label>minutos</label>
+          </div>
+          <span class="sep">:</span>
+          <div class="time-field">
+            <input type="number" id="inp-s" min="0" max="59" value="0">
+            <label>segundos</label>
+          </div>
+        </div>
+        <button class="btn set-btn" id="btn-set">Definir e resetar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const bar = document.getElementById('bar');
+    const wrap = document.getElementById('wrap');
+    const btnPlay = document.getElementById('btn-play');
+    const btnReset = document.getElementById('btn-reset');
+    const btnSet = document.getElementById('btn-set');
+    const inpH = document.getElementById('inp-h');
+    const inpM = document.getElementById('inp-m');
+    const inpS = document.getElementById('inp-s');
+
+    let total = 5 * 60, remaining = total, running = false, interval = null, fontColor = 'default';
+
+    function fmt(s) {
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+      return [h, m, sec].map(n => String(n).padStart(2, '0')).join(':');
+    }
+
+    function render() {
+      display.textContent = fmt(remaining);
+      const pct = total > 0 ? (remaining / total) * 100 : 0;
+      bar.style.width = pct + '%';
+      const isLow = remaining > 0 && remaining <= total * 0.25;
+      if (remaining === 0) {
+        display.classList.add('finished');
+        bar.style.background = '#e74c3c';
+      } else {
+        display.classList.remove('finished');
+        const fc = fontColor === 'default' ? '#f0f0f0' : fontColor;
+        display.style.color = fc;
+        bar.style.background = isLow ? '#e74c3c' : fc;
+      }
+    }
+
+    function tick() {
+      if (remaining <= 0) { clearInterval(interval); running = false; btnPlay.textContent = 'Play'; render(); return; }
+      remaining--; render();
+    }
+
+    btnPlay.addEventListener('click', () => {
+      if (remaining === 0) return;
+      if (running) { clearInterval(interval); running = false; btnPlay.textContent = 'Play'; }
+      else { interval = setInterval(tick, 1000); running = true; btnPlay.textContent = 'Pause'; }
+    });
+
+    btnReset.addEventListener('click', () => {
+      clearInterval(interval); running = false; btnPlay.textContent = 'Play'; remaining = total; render();
+    });
+
+    btnSet.addEventListener('click', () => {
+      const h = Math.min(1, Math.max(0, parseInt(inpH.value) || 0));
+      const m = Math.min(59, Math.max(0, parseInt(inpM.value) || 0));
+      const s = Math.min(59, Math.max(0, parseInt(inpS.value) || 0));
+      const t = h * 3600 + m * 60 + s;
+      if (t === 0) return;
+      clearInterval(interval); running = false; btnPlay.textContent = 'Play';
+      total = t; remaining = t; render();
+    });
+
+    inpH.addEventListener('input', () => {
+      if (parseInt(inpH.value) >= 1) { inpM.value = 0; inpS.value = 0; inpM.disabled = true; inpS.disabled = true; }
+      else { inpM.disabled = false; inpS.disabled = false; }
+    });
+
+    function setupToggle(btnId, panelId) {
+      const btn = document.getElementById(btnId);
+      const panel = document.getElementById(panelId);
+      btn.addEventListener('click', () => {
+        const open = panel.classList.toggle('visible');
+        btn.classList.toggle('open', open);
+      });
+    }
+    setupToggle('tog-appear', 'panel-appear');
+    setupToggle('tog-time', 'panel-time');
+
+    document.getElementById('bg-swatches').addEventListener('click', e => {
+      const sw = e.target.closest('.swatch'); if (!sw) return;
+      document.querySelectorAll('#bg-swatches .swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      wrap.style.background = sw.dataset.color === 'default' ? '' : sw.dataset.color;
+    });
+
+    document.getElementById('font-swatches').addEventListener('click', e => {
+      const sw = e.target.closest('.swatch'); if (!sw) return;
+      document.querySelectorAll('#font-swatches .swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      fontColor = sw.dataset.color;
+      render();
+    });
+
+    document.getElementById('zoom-btns').addEventListener('click', e => {
+      const btn = e.target.closest('.zoom-btn'); if (!btn) return;
+      document.querySelectorAll('.zoom-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      display.style.fontSize = btn.dataset.size + 'px';
+    });
+
+    render();
+  </script>
+</body>
+</html>
