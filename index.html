@@ -3,648 +3,203 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medicamentos · Tracker</title>
+<title>Matuckinhos</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg:#0a0a0f; --surface:#13131a; --border:#1e1e2e;
     --accent:#7c3aed; --accent2:#a855f7;
     --teal:#0d9488; --teal2:#2dd4bf;
-    --green:#22c55e; --yellow:#eab308; --red:#ef4444;
-    --text:#e2e8f0; --muted:#64748b; --pill-bg:#1a1a2e;
+    --text:#e2e8f0; --muted:#64748b;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;padding:0 0 64px;}
-  .noise{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");opacity:.4;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:48px 20px 64px;}
+  .noise{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");}
+  .wrap{width:100%;max-width:480px;position:relative;z-index:1;}
 
-  .app-header{padding:28px 20px 0;max-width:480px;margin:0 auto;position:relative;z-index:1;}
-  .app-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
-  .app-title{font-size:22px;font-weight:800;margin-bottom:20px;}
+  /* HEADER */
+  .header{margin-bottom:48px;text-align:center;}
+  .header-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+  .header-title{font-size:36px;font-weight:800;background:linear-gradient(135deg,#fff 40%,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;cursor:default;user-select:none;}
+  .header-sub{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:.05em;}
 
-  /* TABS - 3 cols */
-  .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:20px;}
-  .tab-btn{padding:10px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;text-align:left;}
-  .tab-btn .tab-icon{font-size:14px;display:block;margin-bottom:3px;}
-  .tab-btn .tab-name{display:block;font-size:11px;}
-  .tab-btn .tab-sub{display:block;font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);margin-top:2px;}
-  .tab-btn.active-attenta{background:#1a0d3a;border-color:var(--accent);color:var(--text);}
-  .tab-btn.active-attenta .tab-sub{color:var(--accent2);}
-  .tab-btn.active-desv{background:#042f2e;border-color:var(--teal);color:var(--text);}
-  .tab-btn.active-desv .tab-sub{color:var(--teal2);}
-  .tab-btn.active-cal{background:#1a1200;border-color:var(--yellow);color:var(--text);}
-  .tab-btn.active-cal .tab-sub{color:var(--yellow);}
+  /* SECTION LABEL */
+  .section-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;padding-left:2px;}
 
-  .panel{display:none;}
-  .panel.active{display:block;}
-  .container{max-width:480px;margin:0 auto;padding:0 16px;position:relative;z-index:1;}
+  /* CARDS */
+  .cards{display:flex;flex-direction:column;gap:10px;margin-bottom:32px;}
+  .card{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;text-decoration:none;color:var(--text);transition:all .2s;position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;}
+  .card.timer::before{background:linear-gradient(180deg,var(--accent),var(--accent2));}
+  .card.timer:hover{border-color:var(--accent);transform:translateX(3px);}
+  .card.led::before{background:linear-gradient(180deg,#f59e0b,#ef4444);}
+  .card.led:hover{border-color:#f59e0b;transform:translateX(3px);}
+  .card.remedios::before{background:linear-gradient(180deg,var(--teal),var(--teal2));}
+  .card.remedios:hover{border-color:var(--teal);transform:translateX(3px);}
+  .card-icon{font-size:24px;flex-shrink:0;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+  .icon-timer{background:#1a0d3a;}
+  .icon-led{background:#1a0900;}
+  .icon-remedios{background:#042f2e;}
+  .card-body{flex:1;}
+  .card-title{font-size:15px;font-weight:700;margin-bottom:2px;}
+  .card-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);}
+  .card-arrow{font-size:16px;color:var(--muted);flex-shrink:0;}
 
-  .label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
-  .hero-card{border-radius:16px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden;border:1px solid var(--border);}
-  .hero-card.attenta-card{background:#0f0a1f;}
-  .hero-card.desv-card{background:#061918;}
-  .hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-  .attenta-card::before{background:linear-gradient(90deg,var(--accent),var(--accent2),transparent);}
-  .desv-card::before{background:linear-gradient(90deg,var(--teal),var(--teal2),transparent);}
-  .dose-display{display:flex;align-items:baseline;gap:6px;margin:12px 0 4px;}
-  .dose-number{font-size:64px;font-weight:800;line-height:1;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .attenta-num{background:linear-gradient(135deg,#fff,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .desv-num{background:linear-gradient(135deg,#fff,var(--teal2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .dose-unit{font-size:20px;color:var(--muted);font-weight:700;}
-  .status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;font-weight:700;text-transform:uppercase;}
-  .badge-titrating{background:#1a0d3a;color:var(--accent2);border:1px solid var(--accent);}
-  .badge-fixed{background:#042f2e;color:var(--teal2);border:1px solid var(--teal);}
-  .badge-goal{background:#1e1b4b;color:var(--accent2);border:1px solid #3730a3;}
-  .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
-  .dot-pulse{animation:pulse 2s infinite;}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  .checkin-btn{width:100%;margin-top:14px;padding:14px;border-radius:12px;border:none;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
-  .checkin-btn.attenta-pending{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px rgba(124,58,237,.4);}
-  .checkin-btn.desv-pending{background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;box-shadow:0 4px 20px rgba(13,148,136,.4);}
-  .checkin-btn.pending:hover{transform:translateY(-1px);}
-  .checkin-btn.done{background:#052e16;color:var(--green);border:1px solid #166534;cursor:default;}
-  .checkin-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;text-align:center;}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;}
-  .stat-value{font-size:28px;font-weight:800;margin:6px 0 2px;font-family:'Space Mono',monospace;}
-  .stat-sub{font-size:11px;color:var(--muted);}
-  .log-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
-  .log-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-  .log-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
-  .streak-pill{padding:2px 8px;border-radius:99px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;}
-  .streak-attenta{background:#052e16;color:var(--green);border:1px solid #166534;}
-  .streak-desv{background:#052e16;color:var(--green);border:1px solid #166534;}
-  .log-entry{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
-  .log-entry:last-child{border-bottom:none;}
-  .log-date{color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;}
-  .log-dose{font-weight:700;}
-  .log-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);}
-  .log-check{color:var(--green);font-size:14px;}
-  .log-miss{color:var(--red);font-size:10px;font-family:'Space Mono',monospace;}
-  .pills-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
-  .pills-bar-bg{background:var(--border);border-radius:99px;height:8px;margin:10px 0 6px;overflow:hidden;}
-  .pills-bar-fill{height:100%;border-radius:99px;transition:width .6s ease;}
-  .bar-attenta{background:linear-gradient(90deg,var(--accent),var(--accent2));}
-  .bar-desv{background:linear-gradient(90deg,var(--teal),var(--teal2));}
-  .pills-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
-  .timeline{margin-bottom:16px;}
-  .tl-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
-  .tl-item{display:flex;gap:14px;align-items:flex-start;margin-bottom:4px;}
-  .tl-line-wrap{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0;}
-  .tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;}
-  .tl-connector{width:2px;height:20px;background:var(--border);margin:2px 0;}
-  .tl-dot-done{background:#052e16;color:var(--green);border:1.5px solid #166534;}
-  .tl-dot-active{background:var(--accent);color:#fff;box-shadow:0 0 12px var(--accent);}
-  .tl-dot-upcoming{background:var(--pill-bg);color:var(--muted);border:1.5px solid var(--border);}
-  .tl-dot-caito{background:#2d1b00;color:var(--yellow);border:1.5px solid #78350f;}
-  .tl-content{flex:1;padding-top:4px;padding-bottom:14px;}
-  .tl-row{display:flex;justify-content:space-between;align-items:center;}
-  .tl-dose{font-size:16px;font-weight:700;}
-  .tl-date{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);}
-  .tl-pills{font-size:11px;color:var(--muted);margin-top:2px;}
-  .alert-card{background:#1a0f00;border:1px solid #78350f;border-radius:12px;padding:16px;display:flex;gap:12px;align-items:flex-start;margin-bottom:16px;}
-  .alert-icon{font-size:20px;flex-shrink:0;}
-  .alert-title{font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:4px;}
-  .alert-body{font-size:12px;color:#d97706;line-height:1.5;}
-  .day-counter{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;}
-  .today-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5;padding-top:8px;border-top:1px solid var(--border);}
-  .info-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
-  .info-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
-  .info-row:last-child{border-bottom:none;}
-  .info-key{color:var(--muted);}
-  .info-val{font-weight:700;font-family:'Space Mono',monospace;font-size:11px;}
-  .refill-card{background:#042f2e;border:1px solid var(--teal);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:center;}
-  .refill-icon{font-size:18px;}
-  .refill-text{font-size:12px;color:var(--teal2);line-height:1.5;}
-  @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
-  .pop{animation:pop .25s ease;}
+  /* SUPORTE CARD */
+  .card-suporte{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:16px;text-decoration:none;color:var(--text);transition:all .2s;overflow:hidden;}
+  .card-suporte:hover{border-color:#f59e0b;transform:translateY(-2px);box-shadow:0 8px 32px rgba(245,158,11,.15);}
+  .suporte-img{width:100%;height:160px;object-fit:cover;object-position:center;display:block;background:#111;}
+  .suporte-body{padding:16px 18px;display:flex;align-items:center;gap:12px;}
+  .suporte-badge{background:#1a0900;border:1px solid #f59e0b;border-radius:99px;padding:2px 10px;font-family:'Space Mono',monospace;font-size:9px;color:#f59e0b;letter-spacing:.1em;text-transform:uppercase;flex-shrink:0;}
+  .suporte-title{font-size:14px;font-weight:700;flex:1;}
+  .suporte-arrow{font-size:16px;color:var(--muted);}
 
-  /* ---- CALENDAR ---- */
-  .cal-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
-  .cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-  .cal-nav-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-  .cal-nav-btn:hover{border-color:var(--accent);color:var(--text);}
-  .cal-month{font-size:15px;font-weight:700;}
-  .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px;}
-  .cal-wd{text-align:center;font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);padding:4px 0;}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-  .cal-day{
-    aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;cursor:default;
-    font-size:11px;font-weight:700;position:relative;
-    border:1px solid transparent;
-  }
-  .cal-day.empty{background:transparent;border-color:transparent;}
-  .cal-day.future{color:var(--muted);background:transparent;}
-  .cal-day.today-cell{border-color:var(--accent)!important;color:var(--text)!important;}
-  .cal-day.none{background:#1a0a0a;color:var(--muted);}
-  .cal-day.attenta-only{background:#1a0d3a;color:var(--accent2);}
-  .cal-day.desv-only{background:#042f2e;color:var(--teal2);}
-  .cal-day.both{background:linear-gradient(135deg,#1a0d3a,#042f2e);color:var(--text);}
-  .cal-day.partial{background:#1a1200;color:var(--yellow);}
-  .cal-day-num{font-size:11px;font-weight:700;line-height:1;}
-  .cal-dots{display:flex;gap:2px;margin-top:2px;}
-  .cal-dot{width:4px;height:4px;border-radius:50%;}
-  .cd-a{background:var(--accent2);}
-  .cd-d{background:var(--teal2);}
+  /* SEÇÃO PESSOAL — escondida por padrão */
+  .section-pessoal{display:none;margin-bottom:32px;}
+  .section-pessoal.visible{display:block;}
 
-  .cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
-  .leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;}
-  .leg-swatch{width:12px;height:12px;border-radius:3px;}
-  .leg-both{background:linear-gradient(135deg,#1a0d3a,#042f2e);}
-  .leg-a{background:#1a0d3a;}
-  .leg-d{background:#042f2e;}
-  .leg-partial{background:#1a1200;}
-  .leg-none{background:#1a0a0a;}
+  /* LOCK OVERLAY */
+  .lock-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:32px;}
+  .lock-overlay.visible{display:flex;}
+  .lock-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px 24px;width:100%;max-width:300px;text-align:center;}
+  .lock-icon{font-size:32px;margin-bottom:12px;}
+  .lock-title{font-size:16px;font-weight:800;margin-bottom:4px;}
+  .lock-sub{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:24px;}
+  .lock-input{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-family:'Space Mono',monospace;font-size:20px;color:var(--text);width:100%;text-align:center;letter-spacing:.3em;outline:none;transition:border-color .2s;margin-bottom:8px;}
+  .lock-input:focus{border-color:var(--accent);}
+  .lock-input.shake{border-color:#ef4444;animation:shake .3s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  .lock-error{font-family:'Space Mono',monospace;font-size:10px;color:#ef4444;min-height:14px;margin-bottom:16px;}
+  .lock-cancel{background:none;border:1px solid var(--border);border-radius:8px;padding:8px 20px;color:var(--muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+  .lock-cancel:hover{border-color:var(--accent);color:var(--text);}
 
-  /* day detail */
-  .day-detail{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;display:none;}
-  .day-detail.visible{display:block;}
-  .dd-title{font-size:13px;font-weight:700;margin-bottom:10px;}
-  .dd-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
-  .dd-row:last-child{border-bottom:none;}
-  .dd-med{font-weight:700;}
-  .dd-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);}
-  .dd-check{color:var(--green);font-size:13px;}
-  .dd-miss{color:var(--red);font-size:10px;font-family:'Space Mono',monospace;}
-
-  /* monthly stats */
-  .month-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
-  .ms-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
-  .ms-val{font-size:20px;font-weight:800;font-family:'Space Mono',monospace;margin:4px 0 2px;}
-  .ms-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
-
-  /* summary bar */
-  .summary-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.95);backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:10px 20px;display:flex;gap:8px;justify-content:center;}
-  .sum-pill{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;border:1px solid var(--border);background:var(--surface);}
-  .sum-dot{width:7px;height:7px;border-radius:50%;}
-  .sum-attenta-ok{border-color:#166534;} .sum-attenta-ok .sum-dot{background:var(--green);}
-  .sum-attenta-no{border-color:#78350f;} .sum-attenta-no .sum-dot{background:var(--yellow);}
-  .sum-desv-ok{border-color:#0d9488;}    .sum-desv-ok .sum-dot{background:var(--teal2);}
-  .sum-desv-no{border-color:#78350f;}    .sum-desv-no .sum-dot{background:var(--yellow);}
+  .footer{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);text-align:center;margin-top:8px;letter-spacing:.1em;}
 </style>
 </head>
 <body>
 <div class="noise"></div>
 
-<div class="app-header" style="position:relative;z-index:1">
-  <div class="app-label">Painel de medicamentos</div>
-  <div class="app-title">💊 Tracker Diário</div>
-  <div class="tabs">
-    <button class="tab-btn active-attenta" id="tab-attenta" onclick="switchTab('attenta')">
-      <span class="tab-icon">🟣</span>
-      <span class="tab-name">Attenta</span>
-      <span class="tab-sub" id="tab-attenta-sub">18mg · manhã</span>
-    </button>
-    <button class="tab-btn" id="tab-desv" onclick="switchTab('desv')">
-      <span class="tab-icon">🔵</span>
-      <span class="tab-name">Desvenla.</span>
-      <span class="tab-sub">50mg · noite</span>
-    </button>
-    <button class="tab-btn" id="tab-cal" onclick="switchTab('cal')">
-      <span class="tab-icon">📅</span>
-      <span class="tab-name">Calendário</span>
-      <span class="tab-sub" id="tab-cal-sub">visão geral</span>
-    </button>
+<!-- LOCK OVERLAY -->
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-box">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">Área pessoal</div>
+    <div class="lock-sub">Acesso restrito</div>
+    <input class="lock-input" id="lockInput" type="password" placeholder="••••••" maxlength="10">
+    <div class="lock-error" id="lockError"></div>
+    <button class="lock-cancel" onclick="closeLock()">Cancelar</button>
   </div>
 </div>
 
-<!-- ======== ATTENTA ======== -->
-<div class="panel active" id="panel-attenta">
-<div class="container">
-  <div class="hero-card attenta-card">
-    <div class="label">Dose atual · Attenta</div>
-    <div class="dose-display">
-      <div class="dose-number attenta-num" id="a-currentDose">18</div>
-      <div class="dose-unit">mg</div>
-    </div>
-    <div id="a-heroBadge"></div>
-    <div class="day-counter" id="a-dayCounter"></div>
-    <div class="today-note" id="a-todayNote"></div>
-    <button class="checkin-btn attenta-pending" id="a-checkinBtn" onclick="registerDose('attenta')">
-      <span id="a-checkinIcon">💊</span><span id="a-checkinLabel">Registrar que tomei hoje</span>
-    </button>
-    <div class="checkin-time" id="a-checkinTime">Alarmes: 08:00 e 11:00</div>
+<div class="wrap">
+  <div class="header">
+    <div class="header-label">Central de ferramentas</div>
+    <div class="header-title" id="mainTitle">Matuckinhos</div>
+    <div class="header-sub">matuckinhos.com.br</div>
   </div>
-  <div class="grid-2">
-    <div class="stat-card">
-      <div class="label">Dias até 80mg</div>
-      <div class="stat-value" id="a-daysToMax">—</div>
-      <div class="stat-sub" id="a-maxDate">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Dias até Caito</div>
-      <div class="stat-value" id="a-daysToCalto" style="color:var(--yellow)">—</div>
-      <div class="stat-sub" id="a-caitoDate">—</div>
-    </div>
-  </div>
-  <div class="log-card">
-    <div class="log-header">
-      <div class="log-title">Histórico</div>
-      <div class="streak-pill streak-attenta" id="a-streakPill">🔥 0 dias</div>
-    </div>
-    <div id="a-logList"><div style="font-size:12px;color:var(--muted);text-align:center;padding:12px 0">Nenhum registro ainda.</div></div>
-  </div>
-  <div class="pills-card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div class="label">Comprimidos 18mg</div>
-      <div style="font-size:12px;color:var(--muted)" id="a-pillsLeft">—</div>
-    </div>
-    <div class="pills-bar-bg"><div class="pills-bar-fill bar-attenta" id="a-pillsBar" style="width:0%"></div></div>
-    <div class="pills-row"><span>0</span><span id="a-pillsUsed">—</span><span>30</span></div>
-  </div>
-  <div class="timeline">
-    <div class="tl-title">Progressão de doses</div>
-    <div id="a-timeline"></div>
-  </div>
-  <div class="alert-card" id="a-alertCard" style="display:none">
-    <div class="alert-icon">⚡</div>
-    <div><div class="alert-title" id="a-alertTitle"></div><div class="alert-body" id="a-alertBody"></div></div>
-  </div>
-</div>
-</div>
 
-<!-- ======== DESV ======== -->
-<div class="panel" id="panel-desv">
-<div class="container">
-  <div class="hero-card desv-card">
-    <div class="label">Dose fixa · Desvenlafaxina</div>
-    <div class="dose-display">
-      <div class="dose-number desv-num">50</div>
-      <div class="dose-unit">mg</div>
-    </div>
-    <span class="status-badge badge-fixed"><span class="dot dot-pulse"></span>Dose fixa · noite</span>
-    <div class="today-note" style="margin-top:10px">Tomar após jantar, entre 22:00 e 00:00. Alarmes: 22:00 e 00:00.</div>
-    <button class="checkin-btn desv-pending" id="d-checkinBtn" onclick="registerDose('desv')">
-      <span id="d-checkinIcon">💊</span><span id="d-checkinLabel">Registrar que tomei hoje</span>
-    </button>
-    <div class="checkin-time" id="d-checkinTime">Alarmes: 22:00 e 00:00</div>
+  <div class="section-label">Ferramentas de evento</div>
+  <div class="cards">
+    <a class="card timer" href="/timer">
+      <div class="card-icon icon-timer">⏱️</div>
+      <div class="card-body">
+        <div class="card-title">Timer</div>
+        <div class="card-sub">Cronômetro para eventos ao vivo</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </a>
+    <a class="card led" href="/ledcalc">
+      <div class="card-icon icon-led">💡</div>
+      <div class="card-body">
+        <div class="card-title">Calculadora LED</div>
+        <div class="card-sub">Cálculo de painéis e consumo</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </a>
   </div>
-  <div class="grid-2">
-    <div class="stat-card">
-      <div class="label">Streak atual</div>
-      <div class="stat-value" id="d-streakVal" style="color:var(--teal2)">0</div>
-      <div class="stat-sub">dias consecutivos</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Comprimidos</div>
-      <div class="stat-value" id="d-pillsLeft2">—</div>
-      <div class="stat-sub">de 28 restantes</div>
-    </div>
-  </div>
-  <div id="d-refillCard" class="refill-card" style="display:none">
-    <div class="refill-icon">🔔</div>
-    <div class="refill-text" id="d-refillText">—</div>
-  </div>
-  <div class="log-card">
-    <div class="log-header">
-      <div class="log-title">Histórico</div>
-      <div class="streak-pill streak-desv" id="d-streakPill">🔥 0 dias</div>
-    </div>
-    <div id="d-logList"><div style="font-size:12px;color:var(--muted);text-align:center;padding:12px 0">Nenhum registro ainda.</div></div>
-  </div>
-  <div class="pills-card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div class="label">Caixa atual (28 comp.)</div>
-      <div style="font-size:12px;color:var(--muted)" id="d-pillsLeftLabel">—</div>
-    </div>
-    <div class="pills-bar-bg"><div class="pills-bar-fill bar-desv" id="d-pillsBar" style="width:0%"></div></div>
-    <div class="pills-row"><span>0</span><span id="d-pillsUsed">—</span><span>28</span></div>
-  </div>
-  <div class="info-card">
-    <div class="label" style="margin-bottom:10px">Informações</div>
-    <div class="info-row"><span class="info-key">Medicamento</span><span class="info-val">Desvenlafaxina</span></div>
-    <div class="info-row"><span class="info-key">Dose</span><span class="info-val">50mg · dose fixa</span></div>
-    <div class="info-row"><span class="info-key">Horário</span><span class="info-val">22:00–00:00</span></div>
-    <div class="info-row"><span class="info-key">Instrução</span><span class="info-val">Após jantar</span></div>
-    <div class="info-row"><span class="info-key">Alarmes</span><span class="info-val">22:00 · 00:00</span></div>
-    <div class="info-row"><span class="info-key">Comprimidos/caixa</span><span class="info-val">28</span></div>
-    <div class="info-row"><span class="info-key">Início do registro</span><span class="info-val" id="d-startDate">—</span></div>
-  </div>
-</div>
-</div>
 
-<!-- ======== CALENDÁRIO ======== -->
-<div class="panel" id="panel-cal">
-<div class="container">
-
-  <!-- monthly stats -->
-  <div class="month-stats" id="cal-stats"></div>
-
-  <!-- calendar -->
-  <div class="cal-card">
-    <div class="cal-nav">
-      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
-      <div class="cal-month" id="cal-month-label">—</div>
-      <button class="cal-nav-btn" onclick="calNext()">›</button>
-    </div>
-    <div class="cal-weekdays">
-      <div class="cal-wd">DOM</div><div class="cal-wd">SEG</div><div class="cal-wd">TER</div>
-      <div class="cal-wd">QUA</div><div class="cal-wd">QUI</div><div class="cal-wd">SEX</div><div class="cal-wd">SÁB</div>
-    </div>
-    <div class="cal-grid" id="cal-grid"></div>
-    <div class="cal-legend">
-      <div class="leg-item"><div class="leg-swatch leg-both"></div>ambos</div>
-      <div class="leg-item"><div class="leg-swatch leg-a"></div>só Attenta</div>
-      <div class="leg-item"><div class="leg-swatch leg-d"></div>só Desvenla.</div>
-      <div class="leg-item"><div class="leg-swatch leg-partial" style="border:1px solid var(--yellow)"></div>parcial</div>
-      <div class="leg-item"><div class="leg-swatch leg-none"></div>nenhum</div>
+  <!-- SEÇÃO PESSOAL — revelada após senha -->
+  <div class="section-pessoal" id="secaoPessoal">
+    <div class="section-label">Pessoal</div>
+    <div class="cards">
+      <a class="card remedios" href="/remedios">
+        <div class="card-icon icon-remedios">💊</div>
+        <div class="card-body">
+          <div class="card-title">Tracker de Remédios</div>
+          <div class="card-sub">Attenta · Desvenlafaxina · aderência</div>
+        </div>
+        <div class="card-arrow">›</div>
+      </a>
     </div>
   </div>
 
-  <!-- day detail -->
-  <div class="day-detail" id="day-detail">
-    <div class="dd-title" id="dd-title">—</div>
-    <div id="dd-rows"></div>
-  </div>
+  <div class="section-label">Loja</div>
+  <a class="card-suporte" href="https://www.casadoroadie.com.br/busca?q=matuckinhos" target="_blank" rel="noopener">
+    <img class="suporte-img" src="data:image/png;base64,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" alt="Suportes de Microfone Matuckinhos">
+    <div class="suporte-body">
+      <span class="suporte-badge">Casa do Roadie</span>
+      <span class="suporte-title">Suportes de Microfone Matuckinhos</span>
+      <span class="suporte-arrow">↗</span>
+    </div>
+  </a>
 
-</div>
-</div>
-
-<!-- SUMMARY BAR -->
-<div class="summary-bar">
-  <div class="sum-pill" id="sum-attenta"><div class="sum-dot"></div><span id="sum-attenta-text">Attenta —</span></div>
-  <div class="sum-pill" id="sum-desv"><div class="sum-dot"></div><span id="sum-desv-text">Desv. —</span></div>
+  <div class="footer" style="margin-top:32px">© 2025 Matuckinhos · todos os direitos reservados</div>
 </div>
 
 <script>
-const START_DATE=new Date('2026-04-11'); START_DATE.setHours(0,0,0,0);
-const DESV_START=new Date('2026-04-11'); DESV_START.setHours(0,0,0,0);
-const STEPS=[
-  {day:0,dose:18,pills:1,label:'1 comprimido'},
-  {day:3,dose:36,pills:2,label:'2 comprimidos'},
-  {day:6,dose:54,pills:3,label:'3 comprimidos'},
-  {day:9,dose:72,pills:4,label:'4 comprimidos'},
-  {day:12,dose:80,pills:null,label:'Nova receita (80mg)'},
-];
-const SK_A='attenta_log_v1', SK_D='desv_log_v1';
-function loadLog(k){try{return JSON.parse(localStorage.getItem(k)||'{}')}catch{return{}}}
-function saveLog(k,l){localStorage.setItem(k,JSON.stringify(l))}
-function todayKey(){const t=new Date();return`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`}
-function dateKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function getStepDate(d){const x=new Date(START_DATE);x.setDate(x.getDate()+d);return x}
-function formatDate(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}
-function today(){const t=new Date();t.setHours(0,0,0,0);return t}
-function diffDays(a,b){return Math.round((b-a)/86400000)}
-function currentStep(){const now=today();let s=STEPS[0];for(let i=0;i<STEPS.length;i++){if(now>=getStepDate(STEPS[i].day))s=STEPS[i];else break}return s}
-function daysUntil(d){return diffDays(today(),getStepDate(d))}
-function pillsUsedSoFar(){const now=today();let used=0;for(let i=0;i<STEPS.length;i++){if(!STEPS[i].pills)break;const ss=getStepDate(STEPS[i].day);if(now<ss)break;const ns=i<STEPS.length-1?getStepDate(STEPS[i+1].day):null;const pe=ns&&now>=ns?ns:new Date(now.getTime()+86400000);used+=diffDays(ss,pe)*STEPS[i].pills}return used}
-function calcStreak(log){let s=0;const d=new Date();while(true){const k=dateKey(d);if(log[k]){s++;d.setDate(d.getDate()-1)}else break}return s}
+const SENHA = '134679';
+let clickCount = 0;
+let clickTimer = null;
 
-function registerDose(med){
-  const sk=med==='attenta'?SK_A:SK_D;
-  const log=loadLog(sk);const key=todayKey();
-  if(log[key])return;
-  const now=new Date();
-  log[key]={time:`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,dose:med==='attenta'?currentStep().dose:50};
-  saveLog(sk,log);render();
-  const btn=document.getElementById(med==='attenta'?'a-checkinBtn':'d-checkinBtn');
-  btn.classList.add('pop');setTimeout(()=>btn.classList.remove('pop'),300);
+// Triplo clique no título
+document.getElementById('mainTitle').addEventListener('click', function() {
+  clickCount++;
+  clearTimeout(clickTimer);
+  clickTimer = setTimeout(function() { clickCount = 0; }, 500);
+  if (clickCount >= 3) {
+    clickCount = 0;
+    clearTimeout(clickTimer);
+    openLock();
+  }
+});
+
+function openLock() {
+  document.getElementById('lockOverlay').classList.add('visible');
+  setTimeout(function() { document.getElementById('lockInput').focus(); }, 100);
 }
 
-// ---- TABS ----
-let currentTab='attenta';
-function switchTab(tab){
-  currentTab=tab;
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+tab).classList.add('active');
-  ['attenta','desv','cal'].forEach(t=>{
-    const btn=document.getElementById('tab-'+t);
-    btn.className='tab-btn'+(tab===t?' active-'+t:'');
-  });
-  if(tab==='cal')renderCal();
+function closeLock() {
+  document.getElementById('lockOverlay').classList.remove('visible');
+  document.getElementById('lockInput').value = '';
+  document.getElementById('lockError').textContent = '';
 }
 
-// ---- CALENDAR STATE ----
-let calYear=new Date().getFullYear();
-let calMonth=new Date().getMonth();
-let selectedDay=null;
+document.getElementById('lockInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') tryUnlock();
+});
 
-function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCal();}
-function calNext(){
-  const now=new Date();
-  if(calYear<now.getFullYear()||(calYear===now.getFullYear()&&calMonth<now.getMonth())){
-    calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCal();
-  }
-}
-
-function renderCal(){
-  const aLog=loadLog(SK_A); const dLog=loadLog(SK_D);
-  const now=today();
-  const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  document.getElementById('cal-month-label').textContent=`${MONTHS[calMonth]} ${calYear}`;
-
-  const firstDay=new Date(calYear,calMonth,1).getDay();
-  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-
-  // Monthly stats
-  let bothCount=0,aOnlyCount=0,dOnlyCount=0,missCount=0,totalDays=0;
-  for(let d=1;d<=daysInMonth;d++){
-    const date=new Date(calYear,calMonth,d);
-    if(date>now)break;
-    if(date<START_DATE)continue;
-    totalDays++;
-    const k=dateKey(date);
-    const ha=!!aLog[k],hd=!!dLog[k];
-    if(ha&&hd)bothCount++;
-    else if(ha)aOnlyCount++;
-    else if(hd)dOnlyCount++;
-    else missCount++;
-  }
-  const adherence=totalDays>0?Math.round(((bothCount+(aOnlyCount+dOnlyCount)*0.5)/totalDays)*100):0;
-
-  document.getElementById('cal-stats').innerHTML=`
-    <div class="ms-card"><div class="ms-val" style="color:var(--green)">${bothCount}</div><div class="ms-label">Ambos ✓</div></div>
-    <div class="ms-card"><div class="ms-val" style="color:var(--yellow)">${aOnlyCount+dOnlyCount}</div><div class="ms-label">Parcial</div></div>
-    <div class="ms-card"><div class="ms-val" style="color:var(--accent2)">${adherence}%</div><div class="ms-label">Adesão</div></div>
-  `;
-
-  // Grid
-  const grid=document.getElementById('cal-grid');
-  grid.innerHTML='';
-
-  // empty cells
-  for(let i=0;i<firstDay;i++){
-    grid.innerHTML+=`<div class="cal-day empty"></div>`;
-  }
-
-  for(let d=1;d<=daysInMonth;d++){
-    const date=new Date(calYear,calMonth,d);
-    const isToday=dateKey(date)===todayKey();
-    const isFuture=date>now;
-    const beforeStart=date<START_DATE;
-    const k=dateKey(date);
-
-    let cls='cal-day';
-    let dots='';
-
-    if(isFuture||beforeStart){
-      cls+=' future';
-    } else {
-      const ha=!!aLog[k], hd=!!dLog[k];
-      if(ha&&hd){cls+=' both';dots=`<div class="cal-dots"><div class="cal-dot cd-a"></div><div class="cal-dot cd-d"></div></div>`;}
-      else if(ha){cls+=' attenta-only';dots=`<div class="cal-dots"><div class="cal-dot cd-a"></div></div>`;}
-      else if(hd){cls+=' desv-only';dots=`<div class="cal-dots"><div class="cal-dot cd-d"></div></div>`;}
-      else{cls+=' none';}
-    }
-    if(isToday)cls+=' today-cell';
-
-    grid.innerHTML+=`<div class="${cls}" onclick="showDayDetail(${calYear},${calMonth},${d})">
-      <div class="cal-day-num">${d}</div>
-      ${dots}
-    </div>`;
-  }
-
-  // update tab sub
-  document.getElementById('tab-cal-sub').textContent=`${adherence}% adesão`;
-}
-
-function showDayDetail(y,m,d){
-  const date=new Date(y,m,d);
-  const k=dateKey(date);
-  const aLog=loadLog(SK_A); const dLog=loadLog(SK_D);
-  const now=today();
-
-  const detail=document.getElementById('day-detail');
-  const title=document.getElementById('dd-title');
-  const rows=document.getElementById('dd-rows');
-
-  const dateStr=date.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
-  title.textContent=dateStr.charAt(0).toUpperCase()+dateStr.slice(1);
-
-  const isFuture=date>now;
-  const beforeStart=date<START_DATE;
-
-  if(isFuture){
-    rows.innerHTML=`<div style="font-size:12px;color:var(--muted);padding:8px 0">Data futura.</div>`;
-  } else if(beforeStart){
-    rows.innerHTML=`<div style="font-size:12px;color:var(--muted);padding:8px 0">Antes do início do tratamento.</div>`;
+function tryUnlock() {
+  var input = document.getElementById('lockInput');
+  var err = document.getElementById('lockError');
+  if (input.value === SENHA) {
+    sessionStorage.setItem('pessoal_auth', '1');
+    closeLock();
+    document.getElementById('secaoPessoal').classList.add('visible');
   } else {
-    const aEntry=aLog[k]; const dEntry=dLog[k];
-
-    // attenta dose on that day
-    let aDose=STEPS[0].dose;
-    for(let j=0;j<STEPS.length;j++){if(date>=getStepDate(STEPS[j].day))aDose=STEPS[j].dose;else break;}
-
-    rows.innerHTML=`
-      <div class="dd-row">
-        <div><div class="dd-med" style="color:var(--accent2)">🟣 Attenta ${aDose}mg</div></div>
-        ${aEntry
-          ?`<div style="text-align:right"><div class="dd-time">${aEntry.time}</div><div class="dd-check">✓</div></div>`
-          :`<div class="dd-miss">não registrado</div>`}
-      </div>
-      <div class="dd-row">
-        <div><div class="dd-med" style="color:var(--teal2)">🔵 Desvenlafaxina 50mg</div></div>
-        ${dEntry
-          ?`<div style="text-align:right"><div class="dd-time">${dEntry.time}</div><div class="dd-check">✓</div></div>`
-          :`<div class="dd-miss">não registrado</div>`}
-      </div>
-    `;
+    input.classList.add('shake');
+    err.textContent = 'senha incorreta';
+    input.value = '';
+    setTimeout(function() {
+      input.classList.remove('shake');
+      err.textContent = '';
+    }, 800);
   }
-
-  detail.classList.add('visible');
-  detail.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-// ---- RENDER ATTENTA ----
-function renderLogList(elId,allDays,todayK){
-  const el=document.getElementById(elId);
-  const recent=allDays.slice(-7).reverse();
-  if(!recent.length){el.innerHTML=`<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px 0">Nenhum registro ainda.</div>`;return;}
-  const now=today();
-  el.innerHTML=recent.map(r=>{
-    const isToday=r.k===todayK;
-    const ds=isToday?'Hoje':r.d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
-    if(r.entry)return`<div class="log-entry"><div><div class="log-date">${ds}</div><div class="log-dose">${r.dose}mg</div></div><div style="text-align:right"><div class="log-time">${r.entry.time}</div><div class="log-check">✓</div></div></div>`;
-    return`<div class="log-entry"><div><div class="log-date">${ds}</div><div class="log-dose" style="color:var(--muted)">${r.dose}mg</div></div><div class="log-miss">${r.d<now?'não reg.':'pendente'}</div></div>`;
-  }).join('');
+// Se já autenticado nesta sessão, mostrar seção pessoal direto
+if (sessionStorage.getItem('pessoal_auth') === '1') {
+  document.getElementById('secaoPessoal').classList.add('visible');
 }
-
-function renderAttenta(){
-  const now=today();const step=currentStep();
-  const log=loadLog(SK_A);const key=todayKey();
-  const takenToday=!!log[key];
-  const daysSinceStart=diffDays(START_DATE,now);
-  document.getElementById('a-currentDose').textContent=step.dose;
-  document.getElementById('tab-attenta-sub').textContent=`${step.dose}mg · manhã`;
-  const badge=document.getElementById('a-heroBadge');
-  badge.innerHTML=step.dose===80?`<span class="status-badge badge-goal"><span class="dot"></span>Dose máxima</span>`:`<span class="status-badge badge-titrating"><span class="dot dot-pulse"></span>Em titulação</span>`;
-  document.getElementById('a-dayCounter').textContent=`Dia ${daysSinceStart+1} · início 11/04`;
-  const nextStep=STEPS.find(s=>getStepDate(s.day)>now);
-  const noteEl=document.getElementById('a-todayNote');
-  if(nextStep){const d=daysUntil(nextStep.day);noteEl.textContent=d===0?`Hoje sobe para ${nextStep.dose}mg.`:`Próxima mudança: ${nextStep.dose}mg em ${d} dia${d>1?'s':''} (${formatDate(getStepDate(nextStep.day))}).`;}
-  else{noteEl.textContent='Titulação concluída.';}
-  const btn=document.getElementById('a-checkinBtn');
-  if(takenToday){btn.className='checkin-btn done';document.getElementById('a-checkinIcon').textContent='✓';document.getElementById('a-checkinLabel').textContent=`${step.dose}mg registrados`;document.getElementById('a-checkinTime').textContent=`Tomado às ${log[key].time} · alarmes 08:00/11:00`;}
-  else{btn.className='checkin-btn attenta-pending';document.getElementById('a-checkinIcon').textContent='💊';document.getElementById('a-checkinLabel').textContent='Registrar que tomei hoje';document.getElementById('a-checkinTime').textContent='Alarmes: 08:00 e 11:00';}
-  const caitoStep=STEPS.find(s=>s.dose===72);const maxStep=STEPS.find(s=>s.dose===80);
-  const dtCaito=daysUntil(caitoStep.day);const dtMax=daysUntil(maxStep.day);
-  document.getElementById('a-daysToMax').textContent=dtMax>0?dtMax:'✓';
-  document.getElementById('a-maxDate').textContent=formatDate(getStepDate(maxStep.day));
-  document.getElementById('a-daysToCalto').textContent=dtCaito>0?dtCaito:(dtMax>0?'Ligue!':'✓');
-  document.getElementById('a-caitoDate').textContent=formatDate(getStepDate(caitoStep.day));
-  const streak=calcStreak(log);
-  document.getElementById('a-streakPill').textContent=`🔥 ${streak} dia${streak!==1?'s':''}`;
-  const allDays=[];
-  for(let i=0;i<=daysSinceStart;i++){const d=new Date(START_DATE);d.setDate(d.getDate()+i);const k=dateKey(d);let dose=STEPS[0].dose;for(let j=0;j<STEPS.length;j++){if(d>=getStepDate(STEPS[j].day))dose=STEPS[j].dose;else break;}allDays.push({k,d,dose,entry:log[k]});}
-  renderLogList('a-logList',allDays,key);
-  const used=pillsUsedSoFar();
-  document.getElementById('a-pillsLeft').textContent=`${Math.max(0,30-used)} restantes`;
-  document.getElementById('a-pillsUsed').textContent=`${used} usados`;
-  document.getElementById('a-pillsBar').style.width=Math.min(100,(used/30)*100)+'%';
-  const tlEl=document.getElementById('a-timeline');tlEl.innerHTML='';
-  STEPS.forEach((s,i)=>{
-    const sd=getStepDate(s.day);const isDone=now>sd;
-    const isActive=(!isDone&&now.getTime()===sd.getTime())||(isDone&&(i===STEPS.length-1||now<getStepDate(STEPS[i+1].day)));
-    const isLast=i===STEPS.length-1;
-    let dc=s.pills===null?'tl-dot-caito':'tl-dot-upcoming';
-    if(isActive)dc='tl-dot-active';else if(isDone)dc='tl-dot-done';
-    const dl=s.day===0?'Hoje':`+${s.day}d`;
-    tlEl.innerHTML+=`<div class="tl-item"><div class="tl-line-wrap"><div class="tl-dot ${dc}">${isDone&&!isActive?'✓':dl}</div>${!isLast?'<div class="tl-connector"></div>':''}</div><div class="tl-content"><div class="tl-row"><div class="tl-dose" style="${isActive?'color:#c084fc':isDone?'color:var(--green)':''}">${s.dose}mg</div><div class="tl-date">${formatDate(sd)}</div></div><div class="tl-pills">${s.pills?`${s.pills}× comp. 18mg`:'⚡ Pedir receita 80mg ao Caito'}</div></div></div>`;
-  });
-  const ac=document.getElementById('a-alertCard');
-  if(dtCaito<=3&&dtCaito>0){ac.style.display='flex';document.getElementById('a-alertTitle').textContent=`Faltam ${dtCaito} dia(s) — fale com o Caito`;document.getElementById('a-alertBody').textContent=`Você chegará em 72mg em ${formatDate(getStepDate(caitoStep.day))}. Peça a receita de 80mg antes.`;}
-  else if(dtCaito<=0&&dtMax>0){ac.style.display='flex';document.getElementById('a-alertTitle').textContent='Entre em contato com o Caito agora';document.getElementById('a-alertBody').textContent=`Você está em 72mg e precisa da receita de 80mg. Próxima mudança: ${formatDate(getStepDate(maxStep.day))}.`;}
-  else{ac.style.display='none';}
-}
-
-function renderDesv(){
-  const now=today();const log=loadLog(SK_D);const key=todayKey();
-  const takenToday=!!log[key];
-  const daysSinceStart=diffDays(DESV_START,now);
-  const streak=calcStreak(log);
-  const totalUsed=Object.keys(log).length;
-  const remaining=Math.max(0,28-totalUsed);
-  const btn=document.getElementById('d-checkinBtn');
-  if(takenToday){btn.className='checkin-btn done';document.getElementById('d-checkinIcon').textContent='✓';document.getElementById('d-checkinLabel').textContent='50mg registrados';document.getElementById('d-checkinTime').textContent=`Tomado às ${log[key].time} · alarmes 22:00/00:00`;}
-  else{btn.className='checkin-btn desv-pending';document.getElementById('d-checkinIcon').textContent='💊';document.getElementById('d-checkinLabel').textContent='Registrar que tomei hoje';document.getElementById('d-checkinTime').textContent='Alarmes: 22:00 e 00:00';}
-  document.getElementById('d-streakVal').textContent=streak;
-  document.getElementById('d-streakPill').textContent=`🔥 ${streak} dia${streak!==1?'s':''}`;
-  document.getElementById('d-pillsLeft2').textContent=remaining;
-  document.getElementById('d-pillsLeftLabel').textContent=`${remaining} restantes`;
-  document.getElementById('d-pillsUsed').textContent=`${totalUsed} usados`;
-  document.getElementById('d-pillsBar').style.width=Math.min(100,(totalUsed/28)*100)+'%';
-  document.getElementById('d-startDate').textContent=formatDate(DESV_START);
-  const rc=document.getElementById('d-refillCard');
-  if(remaining<=7&&remaining>0){rc.style.display='flex';document.getElementById('d-refillText').textContent=`Restam apenas ${remaining} comprimidos. Hora de renovar com o Caito.`;}
-  else if(remaining===0){rc.style.display='flex';document.getElementById('d-refillText').textContent='Caixa esgotada. Renove a receita imediatamente.';}
-  else{rc.style.display='none';}
-  const allDays=[];
-  for(let i=0;i<=daysSinceStart;i++){const d=new Date(DESV_START);d.setDate(d.getDate()+i);const k=dateKey(d);allDays.push({k,d,dose:50,entry:log[k]});}
-  renderLogList('d-logList',allDays,key);
-}
-
-function renderSummary(){
-  const aLog=loadLog(SK_A);const dLog=loadLog(SK_D);const key=todayKey();
-  const aTaken=!!aLog[key];const dTaken=!!dLog[key];
-  const sa=document.getElementById('sum-attenta');const sd=document.getElementById('sum-desv');
-  sa.className='sum-pill '+(aTaken?'sum-attenta-ok':'sum-attenta-no');
-  sd.className='sum-pill '+(dTaken?'sum-desv-ok':'sum-desv-no');
-  document.getElementById('sum-attenta-text').textContent=aTaken?'Attenta ✓':'Attenta pendente';
-  document.getElementById('sum-desv-text').textContent=dTaken?'Desv. ✓':'Desv. pendente';
-}
-
-function render(){renderAttenta();renderDesv();renderSummary();}
-render();
 </script>
 </body>
 </html>
