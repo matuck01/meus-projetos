@@ -1,368 +1,933 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Timer Countdown</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Countdown Timer</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #111;
-      color: #f0f0f0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+/* ════ CONTROLLER ════════════════════════════════════════════════════════════ */
+body.ctrl-mode {
+  background: #111827;
+  color: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+  padding: 18px 16px 52px;
+}
 
-    .wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-      padding: 2rem 1.5rem;
-      border-radius: 16px;
-      transition: background 0.3s;
-      width: 100%;
-      max-width: 500px;
-    }
+header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+header h1 { font-size:.82rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; opacity:.42; }
+#open-viz {
+  display:inline-flex; align-items:center; gap:5px; font-size:.75rem; color:#93c5fd;
+  padding:6px 12px; border:1px solid #1e3a5f; border-radius:6px; cursor:pointer;
+  background:transparent; transition:background .15s;
+}
+#open-viz:hover { background:#1e3a5f; }
 
-    .display {
-      font-weight: 500;
-      letter-spacing: 4px;
-      font-variant-numeric: tabular-nums;
-      line-height: 1;
-      transition: color 0.3s, font-size 0.2s;
-      font-size: 72px;
-      color: #f0f0f0;
-    }
+#mini-display { background:#0d1117; border:1px solid #1f2937; border-radius:12px; padding:14px; text-align:center; margin-bottom:13px; }
+#mini-time { font-size:clamp(2.4rem,9vw,4.8rem); font-weight:100; font-variant-numeric:tabular-nums; line-height:1; color:#fff; transition:color .3s; letter-spacing:.04em; }
+#mini-phase { margin-top:5px; font-size:.6rem; letter-spacing:.28em; text-transform:uppercase; opacity:.3; }
 
-    .display.finished { color: #e74c3c !important; }
+#alert-done { display:none; background:#7f1d1d; border:1px solid #ef4444; border-radius:8px; padding:11px 14px; text-align:center; font-weight:600; letter-spacing:.15em; font-size:.8rem; animation:pulse .8s ease-in-out infinite; margin-bottom:12px; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
 
-    .progress {
-      width: 100%;
-      max-width: 440px;
-      height: 4px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 99px;
-      overflow: hidden;
-    }
+/* Tabs */
+.tabs { display:flex; gap:3px; margin-bottom:13px; background:#0d1117; border:1px solid #1f2937; border-radius:8px; padding:4px; }
+.tab-btn { flex:1; background:transparent; border:none; border-radius:5px; color:#6b7280; font-size:.76rem; font-weight:500; padding:7px 8px; cursor:pointer; transition:background .15s,color .15s; }
+.tab-btn.active { background:#1f2937; color:#f3f4f6; }
+.tab-btn:hover:not(.active) { color:#9ca3af; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
 
-    .progress-bar {
-      height: 100%;
-      border-radius: 99px;
-      background: #f0f0f0;
-      transition: width 0.5s linear, background 0.3s;
-    }
+/* Cards */
+.card { background:#1f2937; border:1px solid #374151; border-radius:10px; padding:14px; margin-bottom:11px; }
+.card-title { font-size:.6rem; letter-spacing:.22em; text-transform:uppercase; opacity:.34; margin-bottom:10px; }
 
-    .controls { display: flex; gap: 10px; }
+/* Inputs */
+.text-input, .sel-input { width:100%; background:#111827; border:1px solid #374151; border-radius:6px; color:#f3f4f6; font-size:.88rem; padding:7px 10px; outline:none; transition:border-color .2s; }
+.text-input:focus, .sel-input:focus { border-color:#3b82f6; }
+.text-input::placeholder { opacity:.28; }
+.sel-input { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; padding-right:28px; }
 
-    .btn {
-      padding: 10px 24px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.08);
-      color: #f0f0f0;
-      font-size: 15px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .btn:hover { background: rgba(255,255,255,0.15); }
-    .btn:active { transform: scale(0.97); }
-    .btn.primary {
-      background: #f0f0f0;
-      color: #111;
-      border-color: #f0f0f0;
-    }
-    .btn.primary:hover { opacity: 0.85; }
+/* Time inputs */
+.time-inputs { display:flex; align-items:center; gap:6px; justify-content:center; }
+.time-field { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.time-field label { font-size:.57rem; letter-spacing:.14em; text-transform:uppercase; opacity:.36; }
+.time-field input { width:62px; background:#111827; border:1px solid #374151; border-radius:6px; color:#fff; font-size:1.65rem; font-weight:200; font-variant-numeric:tabular-nums; text-align:center; padding:6px 4px; outline:none; transition:border-color .2s; -moz-appearance:textfield; }
+.time-field input::-webkit-outer-spin-button,.time-field input::-webkit-inner-spin-button { -webkit-appearance:none; }
+.time-field input:focus { border-color:#3b82f6; }
+.time-sep { font-size:1.65rem; font-weight:100; opacity:.28; margin-top:-10px; }
 
-    .toggle-bar { display: flex; gap: 8px; }
+/* Quick */
+.quick-grid { display:flex; flex-wrap:wrap; gap:5px; margin-top:11px; }
+.btn-quick { flex:1 1 auto; background:#111827; border:1px solid #374151; border-radius:5px; color:#d1d5db; font-size:.71rem; padding:6px 6px; cursor:pointer; transition:background .15s; }
+.btn-quick:hover { background:#1f2937; border-color:#4b5563; }
 
-    .toggle-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 16px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.6);
-      font-size: 13px;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      user-select: none;
-    }
-    .toggle-btn:hover { background: rgba(255,255,255,0.12); color: #f0f0f0; }
-    .toggle-btn.open { background: #f0f0f0; color: #111; border-color: #f0f0f0; }
-    .toggle-btn .arrow { font-size: 10px; transition: transform 0.25s; display: inline-block; }
-    .toggle-btn.open .arrow { transform: rotate(180deg); }
+/* Control buttons */
+.controls-row { display:grid; gap:7px; margin-bottom:7px; }
+.cols1 { grid-template-columns:1fr; }
+.cols2 { grid-template-columns:1fr 1fr; }
+.cols3 { grid-template-columns:1fr 1fr 1fr; }
+.btn { border:none; border-radius:7px; font-size:.8rem; font-weight:600; letter-spacing:.04em; padding:11px 8px; cursor:pointer; transition:opacity .15s,transform .1s; text-transform:uppercase; }
+.btn:active { transform:scale(.97); }
+.btn:disabled { opacity:.2; cursor:not-allowed; transform:none; }
+.btn-set   { background:#3b82f6; color:#fff; } .btn-set:hover   { background:#2563eb; }
+.btn-start { background:#22c55e; color:#fff; } .btn-start:hover { background:#16a34a; }
+.btn-pause { background:#f59e0b; color:#000; } .btn-pause:hover { background:#d97706; }
+.btn-resume{ background:#22c55e; color:#fff; } .btn-resume:hover{ background:#16a34a; }
+.btn-stop  { background:#374151; color:#d1d5db; } .btn-stop:hover { background:#4b5563; }
+.btn-reset { background:#374151; color:#d1d5db; } .btn-reset:hover{ background:#4b5563; }
 
-    .panel {
-      width: 100%;
-      max-width: 440px;
-      overflow: hidden;
-      max-height: 0;
-      transition: max-height 0.35s ease, opacity 0.3s ease;
-      opacity: 0;
-    }
-    .panel.visible { max-height: 400px; opacity: 1; }
+/* Adjust */
+.adj-row { display:flex; gap:5px; flex-wrap:wrap; }
+.btn-adj { flex:1 1 auto; background:#111827; border:1px solid #374151; border-radius:5px; color:#9ca3af; font-size:.7rem; font-weight:500; padding:6px 4px; cursor:pointer; transition:background .15s; white-space:nowrap; }
+.btn-adj:hover { background:#1f2937; color:#f3f4f6; }
+.btn-adj.minus { color:#f87171; } .btn-adj.minus:hover { color:#fff; background:#450a0a; }
+.btn-adj.plus  { color:#86efac; } .btn-adj.plus:hover  { color:#fff; background:#052e16; }
+.btn-adj:disabled { opacity:.18; cursor:not-allowed; }
 
-    .panel-inner {
-      background: rgba(255,255,255,0.06);
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+/* Config rows */
+.cfg-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid #2d3748; }
+.cfg-row:last-child { border-bottom:none; }
+.cfg-row.col { flex-direction:column; align-items:flex-start; }
+.cfg-label { font-size:.82rem; opacity:.85; flex:1; }
+.cfg-hint  { font-size:.6rem; opacity:.36; margin-top:2px; }
 
-    .panel-inner h3 {
-      font-size: 11px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.45);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
+/* Color */
+.color-wrap { display:flex; align-items:center; gap:6px; }
+.color-wrap input[type=color] { width:34px; height:26px; border:1px solid #374151; border-radius:4px; padding:2px; background:#111827; cursor:pointer; }
+.hex-val { font-size:.68rem; font-family:monospace; opacity:.44; min-width:50px; }
 
-    .custom-row { display: flex; align-items: center; gap: 12px; }
-    .custom-row label { font-size: 13px; color: rgba(255,255,255,0.55); min-width: 110px; }
+/* Toggle */
+.toggle { position:relative; width:38px; height:20px; flex-shrink:0; }
+.toggle input { opacity:0; width:0; height:0; }
+.tog-sl { position:absolute; top:0; left:0; right:0; bottom:0; background:#374151; border-radius:10px; transition:background .2s; cursor:pointer; }
+.toggle input:checked + .tog-sl { background:#3b82f6; }
+.tog-sl::before { content:''; position:absolute; height:14px; width:14px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:transform .2s; }
+.toggle input:checked + .tog-sl::before { transform:translateX(18px); }
 
-    .color-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
-    .swatch {
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: transform 0.15s, border-color 0.15s;
-    }
-    .swatch:hover { transform: scale(1.15); }
-    .swatch.active { border-color: #fff; }
+/* Weight pills */
+.weight-pills { display:flex; flex-wrap:wrap; gap:4px; }
+.w-pill { background:#111827; border:1px solid #374151; border-radius:4px; color:#6b7280; font-size:.67rem; padding:4px 8px; cursor:pointer; transition:all .15s; }
+.w-pill.active { background:#3b82f6; border-color:#3b82f6; color:#fff; }
+.w-pill:hover:not(.active) { border-color:#4b5563; color:#d1d5db; }
 
-    .zoom-btns { display: flex; gap: 8px; }
-    .zoom-btn {
-      padding: 6px 12px;
-      font-size: 13px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.06);
-      color: #f0f0f0;
-      cursor: pointer;
-      transition: background 0.15s;
-      font-family: inherit;
-    }
-    .zoom-btn:hover { background: rgba(255,255,255,0.12); }
-    .zoom-btn.active { background: #f0f0f0; color: #111; }
+/* Fit buttons */
+.fit-opts { display:flex; gap:5px; flex-wrap:wrap; }
+.fit-btn { background:#111827; border:1px solid #374151; border-radius:5px; color:#6b7280; font-size:.69rem; padding:5px 10px; cursor:pointer; transition:all .15s; }
+.fit-btn.active { background:#3b82f6; border-color:#3b82f6; color:#fff; }
+.fit-btn:hover:not(.active) { border-color:#4b5563; color:#d1d5db; }
 
-    .time-inputs { display: flex; align-items: center; gap: 8px; justify-content: center; }
-    .time-field { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .time-field label { font-size: 11px; color: rgba(255,255,255,0.5); }
-    .time-field input[type=number] {
-      width: 68px;
-      text-align: center;
-      font-size: 24px;
-      font-weight: 500;
-      padding: 8px 4px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.08);
-      color: #f0f0f0;
-      -moz-appearance: textfield;
-      font-family: inherit;
-    }
-    .time-field input[type=number]::-webkit-inner-spin-button { display: none; }
-    .time-field input[type=number]:focus { outline: none; border-color: rgba(255,255,255,0.5); }
-    .sep { font-size: 24px; font-weight: 500; color: rgba(255,255,255,0.4); margin-top: -12px; }
-    .set-btn { width: 100%; }
-  </style>
+/* BG image preview */
+#bg-preview-wrap { display:none; position:relative; margin-top:8px; }
+#bg-preview-wrap img { width:100%; height:75px; object-fit:cover; border-radius:6px; display:block; }
+#btn-remove-bg { position:absolute; top:5px; right:5px; background:rgba(0,0,0,.75); border:none; border-radius:4px; color:#fff; font-size:.66rem; padding:3px 7px; cursor:pointer; }
+#bg-size-warn { display:none; margin-top:6px; font-size:.66rem; color:#f87171; line-height:1.4; }
+
+/* Small number input */
+.num-input { width:58px; background:#111827; border:1px solid #374151; border-radius:5px; color:#fff; font-size:.86rem; padding:4px 6px; text-align:center; outline:none; -moz-appearance:textfield; }
+.num-input::-webkit-outer-spin-button,.num-input::-webkit-inner-spin-button { -webkit-appearance:none; }
+.num-input:focus { border-color:#3b82f6; }
+
+/* Range */
+input[type=range] { appearance:none; height:4px; border-radius:2px; background:#374151; outline:none; cursor:pointer; }
+input[type=range]::-webkit-slider-thumb { appearance:none; width:14px; height:14px; border-radius:50%; background:#3b82f6; cursor:pointer; }
+
+.btn-text { background:none; border:1px solid #374151; border-radius:6px; color:#6b7280; font-size:.7rem; padding:6px 14px; cursor:pointer; transition:color .15s,border-color .15s; }
+.btn-text:hover { color:#f3f4f6; border-color:#4b5563; }
+
+/* ════ VISUALIZER ════════════════════════════════════════════════════════════ */
+body.viz-mode {
+  background: #080808;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+#viz-view {
+  display: none;
+  position: fixed; inset: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5vh;
+}
+
+#viz-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.5);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#viz-content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2.5vh; width: 100%;
+}
+
+#viz-label {
+  font-size: clamp(.9rem, 2.5vw, 2rem);
+  font-weight: 300; letter-spacing: .35em; text-transform: uppercase;
+  opacity: .7; min-height: 1em; transition: color .4s;
+}
+#viz-countdown {
+  font-size: clamp(5rem, 20vw, 21vw);
+  font-weight: 100; letter-spacing: .03em;
+  font-variant-numeric: tabular-nums; line-height: 1;
+  transition: color .4s;
+}
+#viz-status {
+  font-size: clamp(.65rem, 1.4vw, 1.1rem);
+  font-weight: 400; letter-spacing: .3em; text-transform: uppercase; opacity: .3;
+}
+#viz-prog {
+  position: fixed; bottom: 0; left: 0; height: 5px; width: 0%;
+  background: #fff; opacity: .5; transition: width .25s linear, background-color .4s;
+  z-index: 2;
+}
+#viz-hint {
+  position: fixed; bottom: 14px; right: 18px;
+  font-size: .64rem; opacity: .14; letter-spacing: .1em; color: #fff;
+  pointer-events: none; z-index: 3;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.08} }
+@keyframes pauseGlow { 0%,100%{opacity:.45} 50%{opacity:.22} }
+body.viz-mode.state-done     #viz-countdown { animation: blink .7s ease-in-out infinite; }
+body.viz-mode.state-paused   #viz-countdown { animation: pauseGlow 1.4s ease-in-out infinite; }
+</style>
 </head>
 <body>
-  <div class="wrap" id="wrap">
-    <div class="display" id="display">00:05:00</div>
-    <div class="progress"><div class="progress-bar" id="bar" style="width:100%;"></div></div>
 
-    <div class="controls">
-      <button class="btn" id="btn-reset">Reset</button>
-      <button class="btn primary" id="btn-play">Play</button>
-    </div>
+<!-- ══════════════════════ CONTROLLER VIEW ══════════════════════════════════ -->
+<div id="ctrl-view">
 
-    <div class="toggle-bar">
-      <button class="toggle-btn" id="tog-appear">
-        Aparência <span class="arrow">▼</span>
-      </button>
-      <button class="toggle-btn" id="tog-time">
-        Definir tempo <span class="arrow">▼</span>
-      </button>
-    </div>
+  <header>
+    <h1>⏱ Countdown Timer</h1>
+    <button id="open-viz" onclick="openViz()">📺 Abrir Visualizador</button>
+  </header>
 
-    <div class="panel" id="panel-appear">
-      <div class="panel-inner">
-        <h3>Aparência</h3>
-        <div class="custom-row">
-          <label>Cor de fundo</label>
-          <div class="color-swatches" id="bg-swatches">
-            <div class="swatch active" data-color="default" style="background:rgba(255,255,255,0.15); border:1.5px dashed rgba(255,255,255,0.4);" title="Padrão"></div>
-            <div class="swatch" data-color="#1a1a2e" style="background:#1a1a2e"></div>
-            <div class="swatch" data-color="#0f3460" style="background:#0f3460"></div>
-            <div class="swatch" data-color="#1b4332" style="background:#1b4332"></div>
-            <div class="swatch" data-color="#4a1942" style="background:#4a1942"></div>
-            <div class="swatch" data-color="#7f1d1d" style="background:#7f1d1d"></div>
-            <div class="swatch" data-color="#000000" style="background:#000"></div>
-            <div class="swatch" data-color="#f8f4e8" style="background:#f8f4e8; border:1px solid #aaa;"></div>
-            <div class="swatch" data-color="#ffffff" style="background:#fff; border:1px solid #aaa;"></div>
-          </div>
-        </div>
-        <div class="custom-row">
-          <label>Cor da fonte</label>
-          <div class="color-swatches" id="font-swatches">
-            <div class="swatch active" data-color="default" style="background:#f0f0f0; border:1.5px dashed rgba(255,255,255,0.4);" title="Padrão"></div>
-            <div class="swatch" data-color="#ffffff" style="background:#ffffff; border:1px solid #aaa;"></div>
-            <div class="swatch" data-color="#f1c40f" style="background:#f1c40f"></div>
-            <div class="swatch" data-color="#2ecc71" style="background:#2ecc71"></div>
-            <div class="swatch" data-color="#3498db" style="background:#3498db"></div>
-            <div class="swatch" data-color="#e74c3c" style="background:#e74c3c"></div>
-            <div class="swatch" data-color="#e67e22" style="background:#e67e22"></div>
-            <div class="swatch" data-color="#9b59b6" style="background:#9b59b6"></div>
-            <div class="swatch" data-color="#1abc9c" style="background:#1abc9c"></div>
-          </div>
-        </div>
-        <div class="custom-row">
-          <label>Zoom</label>
-          <div class="zoom-btns" id="zoom-btns">
-            <button class="zoom-btn" data-size="40">P</button>
-            <button class="zoom-btn" data-size="56">M</button>
-            <button class="zoom-btn active" data-size="72">G</button>
-            <button class="zoom-btn" data-size="96">XG</button>
-            <button class="zoom-btn" data-size="128">XXG</button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div id="alert-done">⚠ TEMPO ESGOTADO</div>
 
-    <div class="panel" id="panel-time">
-      <div class="panel-inner">
-        <h3>Definir tempo</h3>
-        <div class="time-inputs">
-          <div class="time-field">
-            <input type="number" id="inp-h" min="0" max="1" value="0">
-            <label>horas</label>
-          </div>
-          <span class="sep">:</span>
-          <div class="time-field">
-            <input type="number" id="inp-m" min="0" max="59" value="5">
-            <label>minutos</label>
-          </div>
-          <span class="sep">:</span>
-          <div class="time-field">
-            <input type="number" id="inp-s" min="0" max="59" value="0">
-            <label>segundos</label>
-          </div>
-        </div>
-        <button class="btn set-btn" id="btn-set">Definir e resetar</button>
-      </div>
-    </div>
+  <div id="mini-display">
+    <div id="mini-time">--:--</div>
+    <div id="mini-phase">aguardando</div>
   </div>
 
-  <script>
-    const display = document.getElementById('display');
-    const bar = document.getElementById('bar');
-    const wrap = document.getElementById('wrap');
-    const btnPlay = document.getElementById('btn-play');
-    const btnReset = document.getElementById('btn-reset');
-    const btnSet = document.getElementById('btn-set');
-    const inpH = document.getElementById('inp-h');
-    const inpM = document.getElementById('inp-m');
-    const inpS = document.getElementById('inp-s');
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('timer',this)">⏱ Timer</button>
+    <button class="tab-btn"        onclick="switchTab('aprnc',this)">🎨 Aparência</button>
+  </nav>
 
-    let total = 5 * 60, remaining = total, running = false, interval = null, fontColor = 'default';
+  <!-- TIMER TAB -->
+  <div id="tab-timer" class="tab-panel active">
 
-    function fmt(s) {
-      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-      return [h, m, sec].map(n => String(n).padStart(2, '0')).join(':');
-    }
+    <!-- Mode toggle -->
+    <div style="display:flex;gap:4px;margin-bottom:12px;background:#0d1117;border:1px solid #1f2937;border-radius:8px;padding:4px;">
+      <button id="mode-btn-countdown" class="tab-btn active" onclick="setTimerMode('countdown',this)" style="font-size:.76rem;">⬇ Decrescente</button>
+      <button id="mode-btn-countup"   class="tab-btn"        onclick="setTimerMode('countup',this)"   style="font-size:.76rem;">⬆ Crescente</button>
+    </div>
 
-    function render() {
-      display.textContent = fmt(remaining);
-      const pct = total > 0 ? (remaining / total) * 100 : 0;
-      bar.style.width = pct + '%';
-      const isLow = remaining > 0 && remaining <= total * 0.25;
-      if (remaining === 0) {
-        display.classList.add('finished');
-        bar.style.background = '#e74c3c';
-      } else {
-        display.classList.remove('finished');
-        const fc = fontColor === 'default' ? '#f0f0f0' : fontColor;
-        display.style.color = fc;
-        bar.style.background = isLow ? '#e74c3c' : fc;
+    <div class="card">
+      <div class="card-title">Título (opcional)</div>
+      <input id="label-input" type="text" class="text-input"
+        placeholder="ex: ALMOÇO · Q&A · INTERVALO" maxlength="60" oninput="updateLabel()">
+    </div>
+
+    <div id="card-definir" class="card">
+      <div class="card-title">Definir tempo</div>
+      <div class="time-inputs">
+        <div class="time-field"><label>horas</label><input id="inp-h" type="number" min="0" max="23" value="0"></div>
+        <div class="time-sep">:</div>
+        <div class="time-field"><label>minutos</label><input id="inp-m" type="number" min="0" max="59" value="5"></div>
+        <div class="time-sep">:</div>
+        <div class="time-field"><label>segundos</label><input id="inp-s" type="number" min="0" max="59" value="0"></div>
+      </div>
+      <div class="quick-grid">
+        <button class="btn-quick" onclick="quickSet(1,0)">1 min</button>
+        <button class="btn-quick" onclick="quickSet(2,0)">2 min</button>
+        <button class="btn-quick" onclick="quickSet(5,0)">5 min</button>
+        <button class="btn-quick" onclick="quickSet(10,0)">10 min</button>
+        <button class="btn-quick" onclick="quickSet(15,0)">15 min</button>
+        <button class="btn-quick" onclick="quickSet(20,0)">20 min</button>
+        <button class="btn-quick" onclick="quickSet(30,0)">30 min</button>
+        <button class="btn-quick" onclick="quickSet(45,0)">45 min</button>
+        <button class="btn-quick" onclick="quickSet(60,0)">1 hora</button>
+      </div>
+      <br>
+      <div class="controls-row cols1">
+        <button class="btn btn-set" onclick="doSet()">⏎ Definir Tempo</button>
+      </div>
+    </div>
+
+    <!-- Countup-only card -->
+    <div id="card-countup" class="card" style="display:none;">
+      <div class="card-title">Contagem crescente</div>
+      <div style="font-size:.65rem;opacity:.38;margin-bottom:12px;line-height:1.5;">
+        O timer começa do zero e conta pra cima. Use Parar ou Reset para encerrar.
+      </div>
+      <div class="controls-row cols1">
+        <button class="btn btn-start" onclick="doStartCountUp()">▶ Iniciar contagem</button>
+      </div>
+    </div>
+
+    <div id="card-settime" class="card">
+      <div class="card-title">Countdown até horário</div>
+      <div style="font-size:.65rem;opacity:.38;margin-bottom:10px;line-height:1.5;">
+        Define o horário de término — o timer calcula automaticamente quanto falta.
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input type="time" id="target-time" step="1"
+          style="flex:1;background:#111827;border:1px solid #374151;border-radius:6px;
+                 color:#fff;font-size:1.6rem;font-weight:200;padding:8px 12px;
+                 outline:none;font-variant-numeric:tabular-nums;letter-spacing:.04em;
+                 color-scheme:dark;"
+          oninput="previewCountdownToTime()">
+      </div>
+
+      <div id="ctt-preview" style="text-align:center;font-size:.78rem;opacity:.5;
+           letter-spacing:.08em;min-height:1.2em;margin-bottom:10px;">
+        —
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
+        <button class="btn btn-set" onclick="startCountdownToTime(false)"
+          style="font-size:.76rem;">
+          ⏱ Definir sem iniciar
+        </button>
+        <button class="btn btn-start" onclick="startCountdownToTime(true)"
+          style="font-size:.76rem;">
+          ▶ Iniciar agora
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Controles</div>
+      <div class="controls-row cols2">
+        <button id="btn-start"  class="btn btn-start"  onclick="doStart()">▶ Iniciar</button>
+        <button id="btn-pause"  class="btn btn-pause"  onclick="doPause()">⏸ Pausar</button>
+        <button id="btn-resume" class="btn btn-resume" onclick="doResume()" style="display:none">▶ Retomar</button>
+      </div>
+      <div class="controls-row cols3">
+        <button id="btn-reset" class="btn btn-reset" onclick="doReset()">↺ Reiniciar</button>
+        <button id="btn-stop"  class="btn btn-stop"  onclick="doStop()" style="grid-column:span 2">■ Parar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ajustar durante contagem</div>
+      <div class="adj-row">
+        <button class="btn-adj minus" id="adj-m5m"  onclick="adjust(-300000)">−5 min</button>
+        <button class="btn-adj minus" id="adj-m1m"  onclick="adjust(-60000)">−1 min</button>
+        <button class="btn-adj minus" id="adj-m30s" onclick="adjust(-30000)">−30 s</button>
+        <button class="btn-adj plus"  id="adj-p30s" onclick="adjust(+30000)">+30 s</button>
+        <button class="btn-adj plus"  id="adj-p1m"  onclick="adjust(+60000)">+1 min</button>
+        <button class="btn-adj plus"  id="adj-p5m"  onclick="adjust(+300000)">+5 min</button>
+      </div>
+    </div>
+
+  </div><!-- /tab-timer -->
+
+  <!-- APARÊNCIA TAB -->
+  <div id="tab-aprnc" class="tab-panel">
+
+    <div class="card">
+      <div class="card-title">Fundo</div>
+      <div class="cfg-row">
+        <span class="cfg-label">Cor de fundo</span>
+        <div class="color-wrap">
+          <input type="color" id="cc-bgColor" value="#080808" oninput="onColor('bgColor',this)">
+          <span class="hex-val" id="hx-bgColor">#080808</span>
+        </div>
+      </div>
+      <div class="cfg-row col" style="border-bottom:1px solid #2d3748;">
+        <span class="cfg-label">Imagem de fundo</span>
+        <span style="font-size:.62rem;opacity:.38;margin-bottom:6px;">Ideal: 1920×1080 px · JPEG 80–90% · &lt; 3 MB</span>
+        <input type="file" id="bg-file" accept="image/*" style="display:none" onchange="loadBgImg(this)">
+        <button class="btn-quick" style="width:auto;padding:7px 14px;" onclick="document.getElementById('bg-file').click()">📁 Selecionar imagem…</button>
+        <div id="bg-size-warn"></div>
+        <div id="bg-preview-wrap">
+          <img id="bg-thumb" src="" alt="">
+          <button id="btn-remove-bg" onclick="removeBg()">✕ Remover</button>
+        </div>
+      </div>
+      <div id="bg-fit-row" class="cfg-row col" style="display:none;">
+        <span class="cfg-label" style="margin-bottom:6px;">Ajuste da imagem</span>
+        <div class="fit-opts">
+          <button class="fit-btn active" data-fit="cover"   onclick="setFit('cover',this)">Cobrir</button>
+          <button class="fit-btn"        data-fit="contain" onclick="setFit('contain',this)">Conter</button>
+          <button class="fit-btn"        data-fit="center"  onclick="setFit('center',this)">Centralizar</button>
+          <button class="fit-btn"        data-fit="tile"    onclick="setFit('tile',this)">Mosaico</button>
+        </div>
+      </div>
+      <div id="overlay-row" class="cfg-row" style="display:none;">
+        <div><div class="cfg-label">Escurecimento</div><div class="cfg-hint" id="overlay-pct">50%</div></div>
+        <input type="range" id="cc-overlay" min="0" max="100" value="50" style="width:90px" oninput="onOverlay(this.value)">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cores do timer</div>
+      <div class="cfg-row">
+        <span class="cfg-label">Normal</span>
+        <div class="color-wrap"><input type="color" id="cc-colorNormal" value="#ffffff" oninput="onColor('colorNormal',this)"><span class="hex-val" id="hx-colorNormal">#ffffff</span></div>
+      </div>
+      <div class="cfg-row">
+        <div><div class="cfg-label">Aviso</div><div class="cfg-hint">últimos <span id="warn-s-lbl">60</span> s</div></div>
+        <div class="color-wrap"><input type="color" id="cc-colorWarning" value="#f59e0b" oninput="onColor('colorWarning',this)"><span class="hex-val" id="hx-colorWarning">#f59e0b</span></div>
+      </div>
+      <div class="cfg-row">
+        <div><div class="cfg-label">Crítico</div><div class="cfg-hint">últimos <span id="crit-s-lbl">30</span> s</div></div>
+        <div class="color-wrap"><input type="color" id="cc-colorCritical" value="#ef4444" oninput="onColor('colorCritical',this)"><span class="hex-val" id="hx-colorCritical">#ef4444</span></div>
+      </div>
+      <div class="cfg-row">
+        <span class="cfg-label">Esgotado</span>
+        <div class="color-wrap"><input type="color" id="cc-colorDone" value="#ef4444" oninput="onColor('colorDone',this)"><span class="hex-val" id="hx-colorDone">#ef4444</span></div>
+      </div>
+      <div class="cfg-row">
+        <span class="cfg-label">Cor do título</span>
+        <div class="color-wrap"><input type="color" id="cc-colorLabel" value="#ffffff" oninput="onColor('colorLabel',this)"><span class="hex-val" id="hx-colorLabel">#ffffff</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Limiares de cor</div>
+      <div class="cfg-row">
+        <div><div class="cfg-label">Aviso a partir de</div><div class="cfg-hint">s restantes</div></div>
+        <div style="display:flex;align-items:center;gap:5px;"><input class="num-input" type="number" id="cc-warnSec" value="60" min="5" max="600" oninput="onNum('warnSec',this,'warn-s-lbl')"><span style="opacity:.32;font-size:.7rem;">s</span></div>
+      </div>
+      <div class="cfg-row">
+        <div><div class="cfg-label">Crítico a partir de</div><div class="cfg-hint">s restantes</div></div>
+        <div style="display:flex;align-items:center;gap:5px;"><input class="num-input" type="number" id="cc-critSec" value="30" min="5" max="300" oninput="onNum('critSec',this,'crit-s-lbl')"><span style="opacity:.32;font-size:.7rem;">s</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tipografia</div>
+      <div class="cfg-row col" style="gap:7px;">
+        <span class="cfg-label">Fonte</span>
+        <select class="sel-input" id="cc-fontFamily" onchange="onFont(this.value)">
+          <option value="system">Sistema (padrão)</option>
+          <option value="bebas">Bebas Neue — condensada, impactante</option>
+          <option value="oswald">Oswald — fina e legível</option>
+          <option value="barlow">Barlow Condensed — compacta clean</option>
+          <option value="roboto_mono">Roboto Mono — monospace</option>
+          <option value="share_tech">Share Tech Mono — display digital</option>
+          <option value="inter">Inter — moderna e neutra</option>
+          <option value="rajdhani">Rajdhani — semi-condensada</option>
+        </select>
+      </div>
+      <div class="cfg-row col" style="gap:7px;padding-top:10px;">
+        <span class="cfg-label">Peso da fonte</span>
+        <div class="weight-pills" id="weight-pills">
+          <button class="w-pill active" onclick="setWeight('100',this)">100</button>
+          <button class="w-pill" onclick="setWeight('200',this)">200</button>
+          <button class="w-pill" onclick="setWeight('300',this)">300</button>
+          <button class="w-pill" onclick="setWeight('400',this)">400</button>
+          <button class="w-pill" onclick="setWeight('500',this)">500</button>
+          <button class="w-pill" onclick="setWeight('600',this)">600</button>
+          <button class="w-pill" onclick="setWeight('700',this)">700</button>
+          <button class="w-pill" onclick="setWeight('800',this)">800</button>
+          <button class="w-pill" onclick="setWeight('900',this)">900</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Interface</div>
+      <div class="cfg-row">
+        <span class="cfg-label">Barra de progresso</span>
+        <label class="toggle"><input type="checkbox" id="cc-showProgress" checked onchange="onBool('showProgress',this.checked)"><span class="tog-sl"></span></label>
+      </div>
+      <div class="cfg-row">
+        <span class="cfg-label">Cor da barra</span>
+        <div class="color-wrap"><input type="color" id="cc-progressColor" value="#ffffff" oninput="onColor('progressColor',this)"><span class="hex-val" id="hx-progressColor">#ffffff</span></div>
+      </div>
+      <div class="cfg-row">
+        <span class="cfg-label">Texto de status</span>
+        <label class="toggle"><input type="checkbox" id="cc-showStatus" checked onchange="onBool('showStatus',this.checked)"><span class="tog-sl"></span></label>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:6px;">
+      <button class="btn-text" onclick="resetCfg()">↺ Restaurar padrões</button>
+    </div>
+
+  </div><!-- /tab-aprnc -->
+
+</div><!-- /ctrl-view -->
+
+<!-- ══════════════════════ VISUALIZER VIEW ══════════════════════════════════ -->
+<div id="viz-view">
+  <div id="viz-overlay"></div>
+  <div id="viz-content">
+    <div id="viz-label"></div>
+    <div id="viz-countdown">--:--</div>
+    <div id="viz-status">aguardando</div>
+  </div>
+  <div id="viz-prog"></div>
+  <div id="viz-hint">clique = tela cheia · F = sair</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// SHARED
+// ══════════════════════════════════════════════════════════════════════════
+const T_KEY  = 'countdown_state';
+const C_KEY  = 'countdown_config';
+const BG_KEY = 'countdown_bg_image';
+
+const DFLT_CFG = {
+  bgColor:'#080808', bgImageFit:'cover', overlayOpacity:.5,
+  colorNormal:'#ffffff', colorWarning:'#f59e0b', colorCritical:'#ef4444',
+  colorDone:'#ef4444', colorLabel:'#ffffff', progressColor:'#ffffff',
+  fontFamily:'system', fontWeight:'100',
+  showProgress:true, showStatus:true, warnSec:60, critSec:30,
+};
+
+const FONT_MAP = {
+  system:     { family:'system-ui,-apple-system,sans-serif', url:null },
+  bebas:      { family:"'Bebas Neue',sans-serif",      url:'https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap' },
+  oswald:     { family:"'Oswald',sans-serif",          url:'https://fonts.googleapis.com/css2?family=Oswald:wght@100;200;300;400;500;600;700&display=swap' },
+  barlow:     { family:"'Barlow Condensed',sans-serif",url:'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@100;200;300;400;500;600;700;800;900&display=swap' },
+  roboto_mono:{ family:"'Roboto Mono',monospace",      url:'https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100;200;300;400;500;600;700&display=swap' },
+  share_tech: { family:"'Share Tech Mono',monospace",  url:'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap' },
+  inter:      { family:"'Inter',sans-serif",           url:'https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap' },
+  rajdhani:   { family:"'Rajdhani',sans-serif",        url:'https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap' },
+};
+
+const loadedFonts = new Set();
+function ensureFont(key) {
+  const f = FONT_MAP[key] || FONT_MAP.system;
+  if (f.url && !loadedFonts.has(key)) {
+    const l = document.createElement('link'); l.rel='stylesheet'; l.href=f.url;
+    document.head.appendChild(l); loadedFonts.add(key);
+  }
+  return f.family;
+}
+
+function loadLS(key) { try { const r=localStorage.getItem(key); return r?JSON.parse(r):null; } catch { return null; } }
+function getRem(st) {
+  if (!st) return 0;
+  if (st.phase==='running') return Math.max(0, st.remainingMsAtPause-(Date.now()-st.runStartedAt));
+  return st.remainingMsAtPause||0;
+}
+function fmt(ms) {
+  const s=Math.ceil(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), ss=s%60;
+  const p=n=>String(n).padStart(2,'0');
+  return h>0?`${p(h)}:${p(m)}:${p(ss)}`:`${p(m)}:${p(ss)}`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MODE DETECTION
+// ══════════════════════════════════════════════════════════════════════════
+const IS_VIZ = location.hash === '#viz';
+
+if (IS_VIZ) {
+  document.title = 'Timer — Visualizador';
+  document.body.classList.add('viz-mode');
+  document.getElementById('ctrl-view').style.display = 'none';
+  document.getElementById('viz-view').style.display  = 'flex';
+  initViz();
+} else {
+  document.title = 'Timer — Controle';
+  document.body.classList.add('ctrl-mode');
+  initCtrl();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// VISUALIZER
+// ══════════════════════════════════════════════════════════════════════════
+function initViz() {
+  const elCd      = document.getElementById('viz-countdown');
+  const elLabel   = document.getElementById('viz-label');
+  const elStatus  = document.getElementById('viz-status');
+  const elProg    = document.getElementById('viz-prog');
+  const elOverlay = document.getElementById('viz-overlay');
+
+  let lastBgHash = null;
+
+  function applyConfig(cfg) {
+    // Font
+    const family = ensureFont(cfg.fontFamily||'system');
+    elCd.style.fontFamily    = family;
+    elLabel.style.fontFamily = family;
+    elCd.style.fontWeight    = cfg.fontWeight||'100';
+    elLabel.style.color      = cfg.colorLabel||'#fff';
+    elProg.style.background  = cfg.progressColor||'#fff';
+    elStatus.style.display   = cfg.showStatus===false?'none':'';
+    elProg.style.display     = cfg.showProgress===false?'none':'';
+
+    // Background
+    const bgData = localStorage.getItem(BG_KEY);
+    if (bgData) {
+      if (bgData !== lastBgHash) {
+        const fit = cfg.bgImageFit||'cover';
+        if (fit==='tile') {
+          document.body.style.background = `url('${bgData}') repeat`;
+          document.body.style.backgroundSize = 'auto';
+        } else if (fit==='center') {
+          document.body.style.background = `${cfg.bgColor||'#080808'} url('${bgData}') no-repeat center center`;
+          document.body.style.backgroundSize = 'auto';
+        } else {
+          document.body.style.background = `url('${bgData}') no-repeat center center / ${fit}`;
+        }
+        lastBgHash = bgData;
       }
+      elOverlay.style.opacity = cfg.overlayOpacity??0.5;
+    } else {
+      document.body.style.background = cfg.bgColor||'#080808';
+      document.body.style.backgroundSize = '';
+      elOverlay.style.opacity = 0;
+      lastBgHash = null;
+    }
+  }
+
+  function render() {
+    const st  = loadLS(T_KEY);
+    const raw = localStorage.getItem(C_KEY);
+    const cfg = raw ? {...DFLT_CFG,...JSON.parse(raw)} : {...DFLT_CFG};
+    const warnMs = (cfg.warnSec||60)*1000;
+    const critMs = (cfg.critSec||30)*1000;
+
+    applyConfig(cfg);
+
+    if (!st || st.phase==='idle') {
+      elCd.textContent     = '--:--';
+      elStatus.textContent = 'aguardando';
+      elLabel.textContent  = '';
+      elCd.style.color     = cfg.colorNormal;
+      elProg.style.width   = '0%';
+      document.body.className = 'viz-mode';
+      return;
     }
 
-    function tick() {
-      if (remaining <= 0) { clearInterval(interval); running = false; btnPlay.textContent = 'Play'; render(); return; }
-      remaining--; render();
+    elLabel.textContent = st.label||'';
+
+    // ── COUNTUP mode ───────────────────────────────────────────────────────
+    if (st.countUp) {
+      const elapsed = st.phase==='running'
+        ? (st.elapsedAtPause||0) + (Date.now() - st.runStartedAt)
+        : (st.elapsedAtPause||0);
+      elCd.textContent     = fmt(elapsed);
+      elCd.style.color     = cfg.colorNormal;
+      elStatus.textContent = st.phase==='paused' ? 'PAUSADO' : '⬆ crescente';
+      elProg.style.width   = '0%'; // no progress bar for countup
+      document.body.className = 'viz-mode' + (st.phase==='paused' ? ' state-paused' : '');
+      return;
     }
 
-    btnPlay.addEventListener('click', () => {
-      if (remaining === 0) return;
-      if (running) { clearInterval(interval); running = false; btnPlay.textContent = 'Play'; }
-      else { interval = setInterval(tick, 1000); running = true; btnPlay.textContent = 'Pause'; }
-    });
+    // ── COUNTDOWN mode ─────────────────────────────────────────────────────
+    const rem  = getRem(st);
+    const done = st.phase==='done' || rem===0;
 
-    btnReset.addEventListener('click', () => {
-      clearInterval(interval); running = false; btnPlay.textContent = 'Play'; remaining = total; render();
-    });
+    if (st.totalMs>0 && cfg.showProgress!==false)
+      elProg.style.width = Math.max(0, rem/st.totalMs)*100+'%';
 
-    btnSet.addEventListener('click', () => {
-      const h = Math.min(1, Math.max(0, parseInt(inpH.value) || 0));
-      const m = Math.min(59, Math.max(0, parseInt(inpM.value) || 0));
-      const s = Math.min(59, Math.max(0, parseInt(inpS.value) || 0));
-      const t = h * 3600 + m * 60 + s;
-      if (t === 0) return;
-      clearInterval(interval); running = false; btnPlay.textContent = 'Play';
-      total = t; remaining = t; render();
-    });
+    if (done) {
+      elCd.textContent     = '00:00';
+      elStatus.textContent = 'TEMPO ESGOTADO';
+      elCd.style.color     = cfg.colorDone;
+      elProg.style.width   = '0%';
+      document.body.className = 'viz-mode state-done';
+      return;
+    }
 
-    inpH.addEventListener('input', () => {
-      if (parseInt(inpH.value) >= 1) { inpM.value = 0; inpS.value = 0; inpM.disabled = true; inpS.disabled = true; }
-      else { inpM.disabled = false; inpS.disabled = false; }
-    });
+    elCd.textContent = fmt(rem);
+    elCd.style.color = rem<=critMs ? cfg.colorCritical : rem<=warnMs ? cfg.colorWarning : cfg.colorNormal;
+    elStatus.textContent = {ready:'pronto',running:'em contagem',paused:'PAUSADO'}[st.phase]||'';
+    document.body.className = 'viz-mode' + (st.phase==='paused'?' state-paused':'');
+  }
 
-    function setupToggle(btnId, panelId) {
-      const btn = document.getElementById(btnId);
-      const panel = document.getElementById(panelId);
-      btn.addEventListener('click', () => {
-        const open = panel.classList.toggle('visible');
-        btn.classList.toggle('open', open);
+  setInterval(render, 100);
+  window.addEventListener('storage', render);
+  render();
+
+  // Fullscreen
+  document.addEventListener('click', () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key==='f'||e.key==='F') {
+      if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+      else document.documentElement.requestFullscreen().catch(()=>{});
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CONTROLLER
+// ══════════════════════════════════════════════════════════════════════════
+function initCtrl() {
+  // ── Timer state ─────────────────────────────────────────────────────────
+  function dfltState() { return {phase:'idle',totalMs:0,remainingMsAtPause:0,runStartedAt:null,label:''}; }
+  let state = dfltState();
+  function saveState() { localStorage.setItem(T_KEY, JSON.stringify(state)); }
+  function loadState() { try { const r=localStorage.getItem(T_KEY); if(r) state=JSON.parse(r); } catch {} }
+  function getRem2() {
+    if (state.phase==='running') return Math.max(0, state.remainingMsAtPause-(Date.now()-state.runStartedAt));
+    return state.remainingMsAtPause||0;
+  }
+
+  // ── Timer actions ────────────────────────────────────────────────────────
+  window.doSet = function() {
+    const h=+document.getElementById('inp-h').value||0, m=+document.getElementById('inp-m').value||0, s=+document.getElementById('inp-s').value||0;
+    const ms=(h*3600+m*60+s)*1000;
+    if (!ms) { alert('Informe um tempo maior que zero.'); return; }
+    state={phase:'ready',totalMs:ms,remainingMsAtPause:ms,runStartedAt:null,label:document.getElementById('label-input').value.trim()};
+    saveState(); updateUI();
+  };
+  window.quickSet = function(m,s) {
+    document.getElementById('inp-h').value=0; document.getElementById('inp-m').value=m; document.getElementById('inp-s').value=s; doSet();
+  };
+  window.updateLabel = function() {
+    if (state.phase!=='idle') { state.label=document.getElementById('label-input').value.trim(); saveState(); }
+  };
+  window.doStart  = function() { if(state.phase!=='ready')  return; state.phase='running'; state.runStartedAt=Date.now(); saveState(); updateUI(); };
+  window.doPause  = function() { if(state.phase!=='running') return; state.remainingMsAtPause=getRem2(); state.phase='paused'; state.runStartedAt=null; saveState(); updateUI(); };
+  window.doResume = function() { if(state.phase!=='paused')  return; state.phase='running'; state.runStartedAt=Date.now(); saveState(); updateUI(); };
+  window.doStop   = function() { state=dfltState(); saveState(); updateUI(); };
+  window.doReset  = function() { if(!state.totalMs) return; state.phase='ready'; state.remainingMsAtPause=state.totalMs; state.runStartedAt=null; saveState(); updateUI(); };
+  window.adjust   = function(delta) {
+    if (state.phase!=='running'&&state.phase!=='paused') return;
+    if (state.phase==='running') { state.remainingMsAtPause=Math.max(1000,getRem2()+delta); state.runStartedAt=Date.now(); }
+    else state.remainingMsAtPause=Math.max(1000,state.remainingMsAtPause+delta);
+    state.totalMs=Math.max(state.totalMs,state.remainingMsAtPause);
+    saveState(); updateUI();
+  };
+
+  // ── Beep ─────────────────────────────────────────────────────────────────
+  let beeped=false;
+  function beep() {
+    try {
+      const ctx=new (window.AudioContext||window.webkitAudioContext)();
+      [0,.42,.84].forEach(d=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);o.frequency.value=880;
+        g.gain.setValueAtTime(.4,ctx.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d+.3);
+        o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+.3);
       });
+    } catch {}
+  }
+
+  // ── Timer UI ──────────────────────────────────────────────────────────────
+  function updateUI() {
+    const phase=state.phase, rem=getRem2();
+    const eT=document.getElementById('mini-time'), eP=document.getElementById('mini-phase');
+    if (phase==='idle') { eT.textContent='--:--'; eP.textContent='aguardando'; eT.style.color='#fff'; }
+    else if (state.countUp) {
+      const el=getElapsedMs();
+      eT.textContent=fmt(el); eT.style.color='#fff';
+      eP.textContent=phase==='paused'?'PAUSADO':'⬆ crescente';
     }
-    setupToggle('tog-appear', 'panel-appear');
-    setupToggle('tog-time', 'panel-time');
+    else if (phase==='done'||rem===0) { eT.textContent='00:00'; eP.textContent='TEMPO ESGOTADO'; eT.style.color='#ef4444'; }
+    else {
+      eT.textContent=fmt(rem);
+      eP.textContent={ready:'pronto',running:'em contagem',paused:'PAUSADO'}[phase]||phase;
+      eT.style.color=rem<=30000?'#ef4444':rem<=60000?'#f59e0b':'#fff';
+    }
+    const done=(phase==='done'||(rem===0&&phase!=='idle'&&!state.countUp));
+    document.getElementById('alert-done').style.display=done?'block':'none';
+    if (done) { if(!beeped){beeped=true;beep();} } else beeped=false;
 
-    document.getElementById('bg-swatches').addEventListener('click', e => {
-      const sw = e.target.closest('.swatch'); if (!sw) return;
-      document.querySelectorAll('#bg-swatches .swatch').forEach(s => s.classList.remove('active'));
-      sw.classList.add('active');
-      wrap.style.background = sw.dataset.color === 'default' ? '' : sw.dataset.color;
+    // In countup mode, hide the "Iniciar" (ready→running) button; start is via doStartCountUp
+    document.getElementById('btn-start').style.display  = (!state.countUp && phase==='ready')?'':'none';
+    document.getElementById('btn-pause').style.display  = phase==='running'?'':'none';
+    document.getElementById('btn-resume').style.display = phase==='paused'?'':'none';
+    document.getElementById('btn-reset').disabled=phase==='idle';
+    document.getElementById('btn-stop').disabled=phase==='idle';
+    const adj=phase==='running'||phase==='paused';
+    ['adj-m5m','adj-m1m','adj-m30s','adj-p30s','adj-p1m','adj-p5m'].forEach(id=>document.getElementById(id).disabled=!adj);
+  }
+
+  function tick() {
+    if (state.phase==='running' && !state.countUp && getRem2()===0) { state.phase='done'; state.remainingMsAtPause=0; saveState(); }
+    updateUI();
+  }
+  setInterval(tick, 100);
+
+  // ── Config ────────────────────────────────────────────────────────────────
+  let cfg = {...DFLT_CFG};
+  function saveCfg() { localStorage.setItem(C_KEY, JSON.stringify(cfg)); }
+  function loadCfg() { try { const r=localStorage.getItem(C_KEY); if(r) cfg={...DFLT_CFG,...JSON.parse(r)}; } catch {} }
+
+  function populateUI() {
+    ['bgColor','colorNormal','colorWarning','colorCritical','colorDone','colorLabel','progressColor'].forEach(k=>{
+      const el=document.getElementById('cc-'+k);
+      if (el) { el.value=cfg[k]; document.getElementById('hx-'+k).textContent=cfg[k]; }
     });
+    document.getElementById('cc-overlay').value=Math.round(cfg.overlayOpacity*100);
+    document.getElementById('overlay-pct').textContent=Math.round(cfg.overlayOpacity*100)+'%';
+    document.getElementById('cc-fontFamily').value=cfg.fontFamily;
+    document.getElementById('cc-warnSec').value=cfg.warnSec;
+    document.getElementById('cc-critSec').value=cfg.critSec;
+    document.getElementById('warn-s-lbl').textContent=cfg.warnSec;
+    document.getElementById('crit-s-lbl').textContent=cfg.critSec;
+    document.getElementById('cc-showProgress').checked=cfg.showProgress;
+    document.getElementById('cc-showStatus').checked=cfg.showStatus;
+    document.querySelectorAll('.w-pill').forEach(p=>p.classList.toggle('active',p.textContent===cfg.fontWeight));
+    const hasBg=!!localStorage.getItem(BG_KEY);
+    document.getElementById('bg-preview-wrap').style.display=hasBg?'block':'none';
+    document.getElementById('bg-fit-row').style.display=hasBg?'':'none';
+    document.getElementById('overlay-row').style.display=hasBg?'':'none';
+    if (hasBg) document.getElementById('bg-thumb').src=localStorage.getItem(BG_KEY);
+    document.querySelectorAll('.fit-btn').forEach(b=>b.classList.toggle('active',b.dataset.fit===cfg.bgImageFit));
+  }
 
-    document.getElementById('font-swatches').addEventListener('click', e => {
-      const sw = e.target.closest('.swatch'); if (!sw) return;
-      document.querySelectorAll('#font-swatches .swatch').forEach(s => s.classList.remove('active'));
-      sw.classList.add('active');
-      fontColor = sw.dataset.color;
-      render();
-    });
+  window.onColor  = function(k,i) { cfg[k]=i.value; document.getElementById('hx-'+k).textContent=i.value; saveCfg(); };
+  window.onBool   = function(k,v) { cfg[k]=v; saveCfg(); };
+  window.onNum    = function(k,i,lid) { const v=parseInt(i.value)||0; cfg[k]=v; if(lid) document.getElementById(lid).textContent=v; saveCfg(); };
+  window.onFont   = function(v) { cfg.fontFamily=v; saveCfg(); };
+  window.onOverlay= function(v) { cfg.overlayOpacity=v/100; document.getElementById('overlay-pct').textContent=v+'%'; saveCfg(); };
+  window.setWeight= function(w,btn) { cfg.fontWeight=w; document.querySelectorAll('.w-pill').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); saveCfg(); };
+  window.setFit   = function(v,btn) { cfg.bgImageFit=v; document.querySelectorAll('.fit-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); saveCfg(); };
+  window.resetCfg = function() { if(!confirm('Restaurar aparência para os padrões?')) return; cfg={...DFLT_CFG}; saveCfg(); populateUI(); };
 
-    document.getElementById('zoom-btns').addEventListener('click', e => {
-      const btn = e.target.closest('.zoom-btn'); if (!btn) return;
-      document.querySelectorAll('.zoom-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      display.style.fontSize = btn.dataset.size + 'px';
-    });
+  window.loadBgImg = function(input) {
+    const file=input.files[0]; if (!file) return;
+    const warn=document.getElementById('bg-size-warn');
+    if (file.size>5*1024*1024) { warn.style.display='block'; warn.textContent=`⚠ ${(file.size/1024/1024).toFixed(1)} MB — tente um JPEG menor.`; } else warn.style.display='none';
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try {
+        localStorage.setItem(BG_KEY,e.target.result);
+        document.getElementById('bg-thumb').src=e.target.result;
+        document.getElementById('bg-preview-wrap').style.display='block';
+        document.getElementById('bg-fit-row').style.display='';
+        document.getElementById('overlay-row').style.display='';
+        warn.style.display='none';
+        saveCfg();
+      } catch { warn.style.display='block'; warn.textContent='✕ Falhou — imagem muito grande. Use menor que 3 MB.'; }
+    };
+    reader.readAsDataURL(file); input.value='';
+  };
+  window.removeBg = function() {
+    localStorage.removeItem(BG_KEY);
+    document.getElementById('bg-preview-wrap').style.display='none';
+    document.getElementById('bg-fit-row').style.display='none';
+    document.getElementById('overlay-row').style.display='none';
+    saveCfg();
+  };
 
-    render();
-  </script>
+  // ── Timer mode (countdown / countup) ─────────────────────────────────────
+  let timerMode = 'countdown'; // 'countdown' | 'countup'
+
+  window.setTimerMode = function(mode, btn) {
+    timerMode = mode;
+    document.querySelectorAll('#tab-timer .tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const isUp = mode === 'countup';
+    document.getElementById('card-definir').style.display  = isUp ? 'none' : '';
+    document.getElementById('card-settime').style.display  = isUp ? 'none' : '';
+    document.getElementById('card-countup').style.display  = isUp ? ''     : 'none';
+  };
+
+  // Countup helpers
+  function getElapsedMs() {
+    if (state.phase === 'running') return (state.elapsedAtPause||0) + (Date.now() - state.runStartedAt);
+    return state.elapsedAtPause||0;
+  }
+
+  window.doStartCountUp = function() {
+    const label = document.getElementById('label-input').value.trim();
+    state = { phase:'running', countUp:true, totalMs:0, remainingMsAtPause:0,
+              elapsedAtPause:0, runStartedAt:Date.now(), label };
+    saveState(); updateUI();
+  };
+
+  // Override pause/resume to handle countup elapsed accumulation
+  const _doPause  = window.doPause;
+  const _doResume = window.doResume;
+  window.doPause = function() {
+    if (state.countUp) {
+      if (state.phase !== 'running') return;
+      state.elapsedAtPause = getElapsedMs();
+      state.phase = 'paused'; state.runStartedAt = null;
+      saveState(); updateUI(); return;
+    }
+    _doPause();
+  };
+  window.doResume = function() {
+    if (state.countUp) {
+      if (state.phase !== 'paused') return;
+      state.phase = 'running'; state.runStartedAt = Date.now();
+      saveState(); updateUI(); return;
+    }
+    _doResume();
+  };
+
+  // ── Countdown to Time ────────────────────────────────────────────────────
+  function getMsUntilTarget() {
+    const val = document.getElementById('target-time').value; // "HH:MM" or "HH:MM:SS"
+    if (!val) return null;
+    const parts = val.split(':').map(Number);
+    const hh = parts[0]||0, mm = parts[1]||0, ss = parts[2]||0;
+    const now = new Date();
+    const target = new Date(now);
+    target.setHours(hh, mm, ss, 0);
+    if (target <= now) target.setDate(target.getDate()+1); // próximo dia
+    return target - now; // ms
+  }
+
+  function previewCountdownToTime() {
+    const ms = getMsUntilTarget();
+    const el = document.getElementById('ctt-preview');
+    if (!ms) { el.textContent='—'; return; }
+    const s=Math.round(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), ss=s%60;
+    let txt = '';
+    if (h>0) txt+=`${h}h `;
+    if (m>0||h>0) txt+=`${m}min `;
+    txt+=`${ss}s`;
+    el.textContent=`Faltam ${txt.trim()}`;
+  }
+
+  // Atualiza preview a cada segundo
+  setInterval(previewCountdownToTime, 1000);
+
+  window.startCountdownToTime = function(autoStart) {
+    const ms = getMsUntilTarget();
+    if (!ms || ms < 1000) { alert('Horário inválido ou já passou.'); return; }
+    const label = document.getElementById('label-input').value.trim();
+    const val   = document.getElementById('target-time').value;
+    state = {
+      phase: autoStart ? 'running' : 'ready',
+      totalMs: ms,
+      remainingMsAtPause: ms,
+      runStartedAt: autoStart ? Date.now() : null,
+      label: label || `até ${val}`,
+    };
+    // Preenche os campos de h/m/s com o tempo calculado (informativo)
+    const totalSec = Math.round(ms/1000);
+    document.getElementById('inp-h').value = Math.floor(totalSec/3600);
+    document.getElementById('inp-m').value = Math.floor((totalSec%3600)/60);
+    document.getElementById('inp-s').value = totalSec%60;
+    saveState(); updateUI();
+    previewCountdownToTime();
+  };
+
+  // ── Tabs & nav ────────────────────────────────────────────────────────────
+  window.switchTab = function(id,btn) {
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+id).classList.add('active'); btn.classList.add('active');
+  };
+  window.openViz = function() {
+    // Open THIS SAME FILE with #viz — same origin = shared localStorage!
+    const url = location.href.split('#')[0]+'#viz';
+    window.open(url,'countdown-viz');
+  };
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  loadState(); loadCfg();
+  if (state.label) document.getElementById('label-input').value=state.label;
+  populateUI(); updateUI();
+}
+</script>
 </body>
 </html>
