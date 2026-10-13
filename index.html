@@ -34,12 +34,15 @@
   .card.timer:hover{border-color:var(--accent);transform:translateX(3px);}
   .card.led::before{background:linear-gradient(180deg,#f59e0b,#ef4444);}
   .card.led:hover{border-color:#f59e0b;transform:translateX(3px);}
+  .card.sorteio::before{background:linear-gradient(180deg,#f5b700,#10b981);}
+  .card.sorteio:hover{border-color:#f5b700;transform:translateX(3px);}
   .card.remedios::before{background:linear-gradient(180deg,var(--teal),var(--teal2));}
   .card.remedios:hover{border-color:var(--teal);transform:translateX(3px);}
   .card-icon{font-size:24px;flex-shrink:0;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
   .icon-timer{background:#1a0d3a;}
   .icon-led{background:#1a0900;}
   .icon-remedios{background:#042f2e;}
+  .icon-sorteio{background:#1f1a00;}
   .card-body{flex:1;}
   .card-title{font-size:15px;font-weight:700;margin-bottom:2px;}
   .card-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);}
@@ -113,6 +116,14 @@
       <div class="card-body">
         <div class="card-title">Calculadora LED</div>
         <div class="card-sub">Cálculo de painéis e consumo</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </a>
+    <a class="card sorteio" href="/sorteio">
+      <div class="card-icon icon-sorteio">🎲</div>
+      <div class="card-body">
+        <div class="card-title">Sorteador</div>
+        <div class="card-sub">Sorteio de nomes com telão</div>
       </div>
       <div class="card-arrow">›</div>
     </a>
