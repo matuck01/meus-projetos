@@ -1,1 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorteador · Matuck Produções</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0E0E10; --panel:#17171B; --panel2:#1F1F25; --line:#2C2C34;
+  --text:#F2F2F0; --muted:#8C8C96; --accent:#F5B700; --accent-ink:#141414;
+  --red:#E24B4A; --green:#3DBE7A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,sans-serif}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+/* ================= CONTROLE ================= */
+.ctrl{max-width:980px;margin:0 auto;padding:28px 16px 60px}
+.brand{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);font-weight:700}
+.h1{font-size:28px;font-weight:800;margin-top:4px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.drop{display:block;border:2px dashed var(--line);border-radius:12px;padding:26px 14px;text-align:center;transition:.15s;cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--accent);background:#F5B70010}
+.drop strong{display:block;font-size:15px;margin-bottom:4px}
+.drop span{font-size:13px;color:var(--muted)}
+.list{margin-top:14px;max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
+.list div{padding:7px 12px;font-size:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
+.list div:last-child{border-bottom:none}
+.list .n{color:var(--muted);font-size:12px;min-width:28px}
+.list .x{color:var(--muted);background:none;border:none;font-size:15px;padding:0 4px}
+.list .x:hover{color:var(--red)}
+.empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+.count{color:var(--accent);font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+input[type=text]{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit}
+input[type=text]:focus{outline:none;border-color:var(--accent)}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600}
+.btn:hover{border-color:#44444f}
+.btn.danger:hover{border-color:var(--red);color:var(--red)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.big{width:100%;padding:22px;font-size:22px;font-weight:800;letter-spacing:2px;border-radius:14px;border:none;background:var(--accent);color:var(--accent-ink);transition:transform .1s,opacity .2s}
+.big:active{transform:scale(.98)}
+.big:disabled{opacity:.35;cursor:default}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:12px;color:var(--text)}
+.check input{width:17px;height:17px;accent-color:var(--accent)}
+.result{margin-top:14px;padding:16px;border-radius:12px;background:var(--panel2);text-align:center;min-height:74px;display:flex;flex-direction:column;justify-content:center}
+.result small{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.result b{font-size:24px;margin-top:4px;word-break:break-word}
+.result.rolling b{color:var(--muted)}
+.result.done b{color:var(--accent)}
+.hist{margin-top:8px;max-height:220px;overflow:auto}
+.hist div{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.hist div span:first-child{color:var(--muted);min-width:26px}
+.status{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#55555f}
+.dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+.colors{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cfield{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
+.cfield input[type=color]{width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:3px;cursor:pointer}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.preset{width:38px;height:30px;border-radius:8px;border:1px solid var(--line);position:relative;overflow:hidden;padding:0}
+.preset i{position:absolute;right:5px;top:50%;width:12px;height:12px;border-radius:50%;transform:translateY(-50%)}
+.preset:hover{border-color:var(--text)}
+.preview{margin-top:12px;border-radius:10px;padding:14px;text-align:center;border:1px solid var(--line)}
+.preview small{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.preview b{display:block;font-size:22px;margin-top:2px}
+.adv{margin-top:16px;padding:0;background:transparent;border-color:transparent}
+.adv[open]{background:var(--panel);border-color:var(--line)}
+.adv summary{list-style:none;cursor:pointer;padding:12px 18px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#4a4a54;font-weight:600;text-align:center;user-select:none}
+.adv summary::-webkit-details-marker{display:none}
+.adv summary:hover{color:var(--muted)}
+.adv[open] summary{color:var(--muted);text-align:left}
+.adv-body{padding:0 18px 18px;max-width:520px}
+.footer{margin-top:28px;text-align:center;font-size:12px;color:var(--muted)}
+
+/* ================= TELÃO ================= */
+.telao{--t-bg:#0A0A0C;--t-accent:#F5B700;--t-text:#F2F2F0;position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:var(--t-bg);color:var(--t-text);overflow:hidden;cursor:default;transition:background-color .4s,color .4s}
+.telao.grad{background-image:radial-gradient(ellipse at center,#ffffff14 0%,transparent 70%)}
+.t-brand{position:absolute;top:4vh;font-size:1.4vw;letter-spacing:.6vw;text-transform:uppercase;color:var(--t-accent);font-weight:700}
+.t-title{font-size:4.2vw;font-weight:800;text-align:center;padding:0 5vw;letter-spacing:.1vw}
+.t-wait{margin-top:2vh;font-size:1.6vw;color:var(--t-text);opacity:.55;letter-spacing:.3vw;text-transform:uppercase;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.2}}
+.t-stage{width:100%;display:flex;flex-direction:column;align-items:center}
+.t-tag{font-size:2vw;letter-spacing:.5vw;text-transform:uppercase;color:var(--t-accent);font-weight:700;margin-bottom:3vh;min-height:3vw}
+.t-name{width:92vw;text-align:center;font-weight:800;line-height:1.05;white-space:nowrap;font-size:12vw}
+.t-name.roll{color:var(--t-text);opacity:.8}
+.t-name.win{color:var(--t-accent);animation:pop .6s cubic-bezier(.2,1.6,.4,1);text-shadow:0 0 4vw color-mix(in srgb,var(--t-accent) 35%,transparent)}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.fsbtn{position:absolute;bottom:3vh;right:3vw;background:#ffffff14;border:1px solid #ffffff22;color:#fff;border-radius:10px;padding:10px 16px;font-size:13px;transition:opacity .4s}
+.idle-cursor{cursor:none}
+.idle-cursor .fsbtn{opacity:0}
+.conf{position:absolute;top:-5vh;width:1vw;height:1.6vw;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<!-- ========== MODO CONTROLE ========== -->
+<div id="ctrl" class="ctrl hidden">
+  <div class="top">
+    <div>
+      <div class="brand" id="ctrlBrand" style="user-select:none;cursor:default">Matuck Produções</div>
+      <div class="h1">Sorteador</div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div class="status"><span class="dot" id="dot"></span><span id="statusTxt">Telão desconectado</span></div>
+      <button class="btn primary" id="openTelao">Abrir telão ↗</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Coluna esquerda: lista -->
+    <div class="card">
+      <div class="label"><span>Participantes · <span class="count" id="count">0</span></span>
+        <button class="btn danger" id="clearList" style="padding:5px 10px;font-size:11px">Limpar lista</button>
+      </div>
+      <label class="drop" id="drop">
+        <strong>Solte o arquivo aqui ou clique</strong>
+        <span>.txt (um nome por linha) · .xlsx / .xls / .csv (primeira coluna)</span>
+        <input type="file" id="file" accept=".txt,.csv,.xlsx,.xls" hidden>
+      </label>
+      <div class="row">
+        <input type="text" id="addName" placeholder="Adicionar nome manualmente e Enter">
+      </div>
+      <div class="list" id="list"><div class="empty">Nenhum nome carregado</div></div>
+    </div>
+
+    <!-- Coluna direita: sorteio -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div class="label"><span>Título no telão</span></div>
+        <input type="text" id="title" value="Sorteio">
+        <label class="check"><input type="checkbox" id="removeWinner" checked> Remover sorteado da lista</label>
+      </div>
+
+
+      <div class="card">
+        <button class="big" id="drawBtn" disabled>SORTEAR</button>
+        <div class="result" id="result"><small>Resultado</small><b>—</b></div>
+        <div class="row">
+          <button class="btn" id="idleBtn" style="flex:1">Limpar telão</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="label"><span>Sorteados</span>
+          <button class="btn" id="clearHist" style="padding:5px 10px;font-size:11px">Limpar</button>
+        </div>
+        <div class="hist" id="hist"><div class="empty" style="border:none">Nenhum sorteio ainda</div></div>
+      </div>
+    </div>
+  </div>
+  <details class="card adv" id="advColors">
+    <summary>⚙︎ Cores do telão (KV)</summary>
+    <div class="adv-body">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn" id="resetColors" style="padding:5px 10px;font-size:11px">Padrão</button></div>
+        <div class="colors">
+          <label class="cfield">Fundo<input type="color" id="cBg"></label>
+          <label class="cfield">Destaque<input type="color" id="cAccent"></label>
+          <label class="cfield">Texto<input type="color" id="cText"></label>
+        </div>
+        <div class="presets" id="presets"></div>
+        <label class="check"><input type="checkbox" id="cGrad"> Brilho no centro (degradê)</label>
+        <div class="preview" id="preview"><small>1º sorteado</small><b>Nome do Ganhador</b></div>
+    </div>
+  </details>
+  <div class="footer">Abra o telão e arraste pra tela do projetor / LED · duplo clique no telão = tela cheia</div>
+</div>
+
+<!-- ========== MODO TELÃO ========== -->
+<div id="telao" class="telao grad hidden">
+  <div class="t-brand" id="tBrand">Matuck Produções</div>
+  <div id="tIdle" style="display:flex;flex-direction:column;align-items:center">
+    <div class="t-title" id="tTitle">Sorteio</div>
+    <div class="t-wait">Aguardando sorteio</div>
+  </div>
+  <div id="tStage" class="t-stage hidden">
+    <div class="t-tag" id="tTag"></div>
+    <div class="t-name" id="tName"></div>
+  </div>
+  <button class="fsbtn" id="fsBtn">⛶ Tela cheia</button>
+</div>
+
+<script>
+const CH_NAME = 'matuck_sorteio';
+const LS_KEY = 'matuck_sorteio_v1';
+const ch = new BroadcastChannel(CH_NAME);
+const isTelao = new URLSearchParams(location.search).has('telao');
+
+// ---------- util ----------
+function rand(n){ const a=new Uint32Array(1); crypto.getRandomValues(a); return a[0]%n; }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// atrasos do giro: começa rápido, desacelera no fim
+function delays(n){ const d=[]; for(let i=0;i<n;i++){ const p=i/n; d.push(45 + Math.pow(p,3)*480); } return d; }
+
+/* =====================================================
+   CONTROLE
+   ===================================================== */
+if(!isTelao){
+  document.getElementById('ctrl').classList.remove('hidden');
+
+  let state = { names:[], history:[], title:'Sorteio', removeWinner:true, hideBrand:false, colors:{bg:'#0A0A0C',accent:'#F5B700',text:'#F2F2F0',grad:true} };
+  try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); if(s) state={...state,...s}; }catch(e){}
+  let rolling=false, lastShown=null;
+
+  const $=id=>document.getElementById(id);
+  const save=()=>{ try{ localStorage.setItem(LS_KEY,JSON.stringify(state)); }catch(e){} };
+
+  $('title').value = state.title;
+  $('removeWinner').checked = state.removeWinner;
+
+  // ---------- botão secreto: 4 cliques no "Matuck Produções" ----------
+  const brandEl=$('ctrlBrand');
+  const paintBrand=()=>{ brandEl.style.opacity = state.hideBrand ? .3 : 1; };
+  let bClicks=0, bTimer;
+  brandEl.addEventListener('click',()=>{
+    bClicks++; clearTimeout(bTimer);
+    bTimer=setTimeout(()=>bClicks=0,1500);
+    if(bClicks>=4){
+      bClicks=0;
+      state.hideBrand=!state.hideBrand; save(); paintBrand();
+      ch.postMessage({type:'brand',hide:state.hideBrand});
+    }
+  });
+  paintBrand();
+
+  // ---------- cores do telão ----------
+  const DEFAULT_COLORS={bg:'#0A0A0C',accent:'#F5B700',text:'#F2F2F0',grad:true};
+  const PRESETS=[
+    {bg:'#0A0A0C',accent:'#F5B700',text:'#F2F2F0'},
+    {bg:'#000000',accent:'#FFFFFF',text:'#BDBDBD'},
+    {bg:'#0B1F4B',accent:'#4FC3F7',text:'#FFFFFF'},
+    {bg:'#4A0D0D',accent:'#FFD54F',text:'#FFFFFF'},
+    {bg:'#0F3D2E',accent:'#7CFFB2',text:'#FFFFFF'},
+    {bg:'#2B0A3D',accent:'#FF4FD8',text:'#FFFFFF'},
+    {bg:'#FFFFFF',accent:'#E24B4A',text:'#1A1A1A'},
+    {bg:'#F5B700',accent:'#141414',text:'#141414'},
+  ];
+  state.colors={...DEFAULT_COLORS,...(state.colors||{})};
+  $('presets').innerHTML=PRESETS.map((p,i)=>`<button class="preset" data-i="${i}" style="background:${p.bg}" title="Preset"><i style="background:${p.accent}"></i></button>`).join('');
+  function paintColors(send=true){
+    const c=state.colors;
+    $('cBg').value=c.bg; $('cAccent').value=c.accent; $('cText').value=c.text; $('cGrad').checked=!!c.grad;
+    const pv=$('preview');
+    pv.style.background=c.bg+(c.grad?'':'');
+    pv.style.backgroundImage=c.grad?'radial-gradient(ellipse at center,#ffffff14 0%,transparent 70%)':'none';
+    pv.querySelector('small').style.color=c.accent;
+    pv.querySelector('b').style.color=c.accent;
+    if(send){ save(); ch.postMessage({type:'colors',colors:c}); }
+  }
+  ['cBg','cAccent','cText'].forEach((id,k)=>$(id).addEventListener('input',e=>{
+    state.colors[['bg','accent','text'][k]]=e.target.value; paintColors();
+  }));
+  $('cGrad').addEventListener('change',e=>{ state.colors.grad=e.target.checked; paintColors(); });
+  $('presets').addEventListener('click',e=>{
+    const b=e.target.closest('.preset'); if(!b) return;
+    state.colors={...state.colors,...PRESETS[+b.dataset.i]}; paintColors();
+  });
+  $('resetColors').onclick=()=>{ state.colors={...DEFAULT_COLORS}; paintColors(); };
+  paintColors(false);
+
+  function renderList(){
+    $('count').textContent = state.names.length;
+    $('drawBtn').disabled = rolling || state.names.length===0;
+    if(!state.names.length){ $('list').innerHTML='<div class="empty">Nenhum nome carregado</div>'; return; }
+    $('list').innerHTML = state.names.map((n,i)=>
+      `<div><span class="n">${i+1}</span><span style="flex:1">${esc(n)}</span><button class="x" data-i="${i}" title="Remover">×</button></div>`).join('');
+  }
+  function renderHist(){
+    if(!state.history.length){ $('hist').innerHTML='<div class="empty" style="border:none">Nenhum sorteio ainda</div>'; return; }
+    $('hist').innerHTML = state.history.map((n,i)=>`<div><span>${i+1}º</span><span>${esc(n)}</span></div>`).join('');
+  }
+
+  $('list').addEventListener('click',e=>{
+    const b=e.target.closest('.x'); if(!b||rolling) return;
+    state.names.splice(+b.dataset.i,1); save(); renderList();
+  });
+
+  // ---------- leitura de arquivos ----------
+  function cleanNames(arr){
+    let out = arr.map(v=>String(v??'').trim()).filter(Boolean);
+    if(out.length && /^(nome|nomes|name|names|participante|participantes)$/i.test(out[0])) out.shift();
+    return out;
+  }
+  async function loadFile(f){
+    const ext=f.name.split('.').pop().toLowerCase();
+    let names=[];
+    if(ext==='txt'){
+      const txt=await f.text();
+      names = txt.split(/\r?\n/);
+    } else {
+      const buf=await f.arrayBuffer();
+      const wb=XLSX.read(buf,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false});
+      names = rows.map(r=>r[0]);
+    }
+    names = cleanNames(names);
+    if(!names.length){ alert('Não achei nomes nesse arquivo.'); return; }
+    if(state.names.length && !confirm(`Carregar ${names.length} nomes?\n\nOK = substituir a lista atual\nCancelar = adicionar à lista atual`)){
+      state.names = state.names.concat(names);
+    } else {
+      state.names = names;
+    }
+    save(); renderList();
+  }
+  $('file').addEventListener('change',e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; });
+  const drop=$('drop');
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+  drop.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) loadFile(f); });
+
+  $('addName').addEventListener('keydown',e=>{
+    if(e.key!=='Enter') return;
+    const v=e.target.value.trim(); if(!v) return;
+    state.names.push(v); e.target.value=''; save(); renderList();
+  });
+  $('clearList').onclick=()=>{ if(rolling) return; if(confirm('Limpar todos os nomes?')){ state.names=[]; save(); renderList(); } };
+  $('clearHist').onclick=()=>{ if(confirm('Limpar histórico de sorteados?')){ state.history=[]; save(); renderHist(); } };
+
+  $('title').addEventListener('input',e=>{ state.title=e.target.value; save(); ch.postMessage({type:'title',title:state.title}); });
+  $('removeWinner').addEventListener('change',e=>{ state.removeWinner=e.target.checked; save(); });
+
+  // ---------- sorteio ----------
+  $('drawBtn').onclick=()=>{
+    if(rolling||!state.names.length) return;
+    const pool=state.names;
+    const wIdx=rand(pool.length);
+    const winner=pool[wIdx];
+    // sequência de "giro" — termina no ganhador
+    const steps = pool.length>1 ? 32 : 1;
+    const seq=[];
+    for(let i=0;i<steps-1;i++){
+      let n=pool[rand(pool.length)];
+      if(pool.length>1 && n===seq[seq.length-1]) n=pool[(pool.indexOf(n)+1)%pool.length];
+      seq.push(n);
+    }
+    seq.push(winner);
+    const d=delays(seq.length);
+    const total=d.reduce((a,b)=>a+b,0);
+
+    rolling=true; renderList();
+    $('result').className='result rolling';
+    $('result').innerHTML='<small>Sorteando…</small><b>—</b>';
+    lastShown={type:'draw',seq,delays:d,winner,title:state.title,n:state.history.length+1};
+    ch.postMessage(lastShown);
+
+    // espelho no controle
+    let i=0;
+    (function step(){
+      $('result').querySelector('b').textContent=seq[i];
+      if(i<seq.length-1){ setTimeout(step,d[i]); i++; }
+    })();
+
+    setTimeout(()=>{
+      rolling=false;
+      state.history.push(winner);
+      if(state.removeWinner){ state.names.splice(wIdx,1); }
+      save(); renderList(); renderHist();
+      $('result').className='result done';
+      $('result').innerHTML=`<small>${state.history.length}º sorteado</small><b>${esc(winner)}</b>`;
+      lastShown={type:'show',winner,n:state.history.length,title:state.title};
+    }, total+50);
+  };
+
+  $('idleBtn').onclick=()=>{
+    lastShown=null;
+    ch.postMessage({type:'idle',title:state.title});
+    $('result').className='result';
+    $('result').innerHTML='<small>Resultado</small><b>—</b>';
+  };
+
+  // ---------- telão ----------
+  $('openTelao').onclick=()=>window.open(location.pathname+'?telao','telao_sorteio','width=1280,height=720');
+
+  let lastPing=0;
+  ch.onmessage=e=>{
+    const m=e.data;
+    if(m.type==='hello'||m.type==='ping'){
+      lastPing=Date.now();
+      if(m.type==='hello'){
+        ch.postMessage({type:'brand',hide:state.hideBrand});
+        ch.postMessage({type:'colors',colors:state.colors});
+        ch.postMessage(lastShown && lastShown.type==='show' ? lastShown : {type:'idle',title:state.title});
+      }
+    }
+  };
+  setInterval(()=>{
+    const on=Date.now()-lastPing<3500;
+    $('dot').classList.toggle('on',on);
+    $('statusTxt').textContent=on?'Telão conectado':'Telão desconectado';
+  },1000);
+
+  renderList(); renderHist();
+}
+
+/* =====================================================
+   TELÃO
+   ===================================================== */
+else{
+  document.title='Telão · Sorteio';
+  const T=document.getElementById('telao'); T.classList.remove('hidden');
+  const tIdle=document.getElementById('tIdle'), tStage=document.getElementById('tStage');
+  const tName=document.getElementById('tName'), tTag=document.getElementById('tTag'), tTitle=document.getElementById('tTitle');
+  let timers=[];
+
+  function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
+  function fit(){
+    let size=12; tName.style.fontSize=size+'vw';
+    while(tName.scrollWidth>tName.clientWidth && size>2.5){ size-=0.4; tName.style.fontSize=size+'vw'; }
+  }
+  function showIdle(title){
+    clearTimers();
+    tTitle.textContent=title||'Sorteio';
+    tStage.classList.add('hidden'); tIdle.classList.remove('hidden');
+  }
+  function showWinner(name,n){
+    tIdle.classList.add('hidden'); tStage.classList.remove('hidden');
+    tTag.textContent=`🎉 ${n}º sorteado`;
+    tName.className='t-name';
+    tName.textContent=name; fit();
+    void tName.offsetWidth; tName.className='t-name win';
+    confetti();
+  }
+  function runDraw(m){
+    clearTimers();
+    tIdle.classList.add('hidden'); tStage.classList.remove('hidden');
+    tTag.textContent=m.title||'Sorteando';
+    tName.className='t-name roll';
+    let t=0;
+    m.seq.forEach((name,i)=>{
+      timers.push(setTimeout(()=>{
+        if(i===m.seq.length-1){ showWinner(name,m.n); }
+        else { tName.textContent=name; fit(); }
+      },t));
+      t+=m.delays[i];
+    });
+  }
+  function confetti(){
+    const acc=getComputedStyle(T).getPropertyValue('--t-accent').trim()||'#F5B700';
+    const colors=[acc,acc,'#ffffff','#E24B4A','#3DBE7A','#4A90E2'];
+    for(let i=0;i<90;i++){
+      const c=document.createElement('div'); c.className='conf';
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=colors[i%colors.length];
+      c.style.animationDuration=(2.2+Math.random()*2.2)+'s';
+      c.style.animationDelay=(Math.random()*0.6)+'s';
+      T.appendChild(c); setTimeout(()=>c.remove(),5200);
+    }
+  }
+
+  ch.onmessage=e=>{
+    const m=e.data;
+    if(m.type==='draw') runDraw(m);
+    else if(m.type==='show') showWinner(m.winner,m.n);
+    else if(m.type==='idle') showIdle(m.title);
+    else if(m.type==='title'){ tTitle.textContent=m.title||'Sorteio'; }
+    else if(m.type==='brand'){ setBrand(m.hide); }
+    else if(m.type==='colors'){ setColors(m.colors); }
+  };
+
+  // logo: aplica pelo canal E pelo localStorage (redundância)
+  function setBrand(hide){ document.getElementById('tBrand').style.display = hide ? 'none' : ''; }
+  function setColors(c){
+    if(!c) return;
+    T.style.setProperty('--t-bg',c.bg); T.style.setProperty('--t-accent',c.accent); T.style.setProperty('--t-text',c.text);
+    T.classList.toggle('grad',!!c.grad);
+  }
+  function brandFromLS(){ try{ const s=JSON.parse(localStorage.getItem(LS_KEY)); setBrand(!!(s&&s.hideBrand)); if(s&&s.colors) setColors(s.colors); }catch(e){} }
+  brandFromLS();
+  window.addEventListener('storage',e=>{ if(e.key===LS_KEY) brandFromLS(); });
+  ch.postMessage({type:'hello'});
+  setInterval(()=>ch.postMessage({type:'ping'}),1500);
+  window.addEventListener('resize',()=>{ if(!tStage.classList.contains('hidden')) fit(); });
+
+  // tela cheia
+  const fs=()=>{ document.fullscreenElement?document.exitFullscreen():T.requestFullscreen().catch(()=>{}); };
+  document.getElementById('fsBtn').onclick=fs;
+  T.addEventListener('dblclick',fs);
+  document.addEventListener('keydown',e=>{ if(e.key==='f'||e.key==='F') fs(); });
+  // esconde cursor e botão parado
+  let idleT; const wake=()=>{ T.classList.remove('idle-cursor'); clearTimeout(idleT); idleT=setTimeout(()=>T.classList.add('idle-cursor'),2000); };
+  T.addEventListener('mousemove',wake); wake();
+}
+</script>
+</body>
+</html>
 
