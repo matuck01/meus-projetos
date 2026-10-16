@@ -36,6 +36,8 @@
   .card.led:hover{border-color:#f59e0b;transform:translateX(3px);}
   .card.sorteio::before{background:linear-gradient(180deg,#f5b700,#10b981);}
   .card.sorteio:hover{border-color:#f5b700;transform:translateX(3px);}
+  .card.somdeplanta::before{background:linear-gradient(180deg,#46a758,#a3e635);}
+  .card.somdeplanta:hover{border-color:#46a758;transform:translateX(3px);}
   .card.remedios::before{background:linear-gradient(180deg,var(--teal),var(--teal2));}
   .card.remedios:hover{border-color:var(--teal);transform:translateX(3px);}
   .card-icon{font-size:24px;flex-shrink:0;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
@@ -43,6 +45,7 @@
   .icon-led{background:#1a0900;}
   .icon-remedios{background:#042f2e;}
   .icon-sorteio{background:#1f1a00;}
+  .icon-somdeplanta{background:#0b1f10;}
   .card-body{flex:1;}
   .card-title{font-size:15px;font-weight:700;margin-bottom:2px;}
   .card-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);}
@@ -124,6 +127,21 @@
       <div class="card-body">
         <div class="card-title">Sorteador</div>
         <div class="card-sub">Sorteio de nomes com telão</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </a>
+    <a class="card somdeplanta" href="/somdeplanta/">
+      <div class="card-icon icon-somdeplanta">
+        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+          <ellipse cx="11" cy="24.5" rx="6" ry="4.3" transform="rotate(-22 11 24.5)" fill="#f2f2f2"/>
+          <rect x="15" y="5" width="2.6" height="20" rx="1.3" fill="#f2f2f2"/>
+          <path d="M16.3 6 C 24 3, 30 9, 28 18 C 21.5 17.5, 16.5 13, 16.3 6 Z" fill="#46a758"/>
+          <path d="M17.5 7.5 Q 22 11, 27 17" stroke="#0b1f10" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".55"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Somdeplanta</div>
+        <div class="card-sub">Disparo de áudio pelo teclado</div>
       </div>
       <div class="card-arrow">›</div>
     </a>
