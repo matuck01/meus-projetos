@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JUDITH — como o deck roda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: amigo explicando o deck pra quem nunca jogou, sem jargão sem explicar
+   IDEA: o folheto de "como jogar" que vem dentro de um precon
+   PICTURE: a conta do comandante desenhada; cartas reais nas seções
+   COLOUR and TYPE: vermelho-montanha, carvão, ouro de acento; Cinzel títulos, Inter texto
+   LAYOUT: coluna de celular, bandas cheias, índice rolável, cartas em grade 2-4 colunas */
+:root{color-scheme:light dark;
+--bg:light-dark(#f8f1f2,#120a0b);--ink:light-dark(#16141c,#eeecf3);--mut:light-dark(#5f5a66,#aaa5b3);
+--red:#8e1530;--red2:light-dark(#7a1029,#ff7690);--card:light-dark(#fff,#22121a);--line:light-dark(#ead3d8,#3c1f27);--gold:#e7a924}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Cinzel,Georgia,serif;line-height:1.1;text-wrap:balance;margin:0}
+h2{font-size:clamp(24px,5vw,32px);margin-bottom:12px}
+h3{font-size:18px;margin:0 0 6px}
+p{margin:0 0 12px;max-width:68ch}
+a{color:var(--red2)}
+.band{padding:clamp(28px,5vw,56px) max(5vw,18px)}
+.wrap{max-width:960px;margin:0 auto}
+.alt{background:light-dark(#f1e2e5,#1a0b0e)}
+.hero{background:var(--red);color:#fff6ef}
+.hero .in{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:center}
+.hero .tag{font-weight:600;opacity:.85;font-size:14px;margin-bottom:6px}
+.hero h1{font-size:clamp(40px,10vw,64px);font-weight:900}
+.hero p{font-size:17px;margin-top:12px;color:rgba(255,255,255,.88)}
+.hero .cmd{max-width:300px;justify-self:center;width:100%}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .scroll{display:flex;gap:4px;padding:8px max(5vw,12px);overflow-x:auto}
+nav a{flex:none;text-decoration:none;color:var(--ink);font-weight:600;font-size:14px;padding:10px 12px;border-radius:8px}
+nav a:hover,nav a:focus-visible{background:var(--line);outline:none}
+/* cartas */
+.mtg{position:relative;aspect-ratio:63/88;border-radius:4.5%/3.2%;overflow:hidden;background:#2a1a14;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.mtg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mtg .fb{position:absolute;inset:5%;border:2px solid #7d2a1c;border-radius:6px;background:linear-gradient(#e9cdb8,#c98d6a);display:flex;flex-direction:column;padding:8px;color:#2b130c}
+.mtg .fb b{font-size:13px;line-height:1.2}
+.mtg .fb i{flex:1;margin:8px 0;border-radius:4px;background:linear-gradient(135deg,#8e1712,#e2412f)}
+.mtg .fb small{font-size:11px}
+.cardgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}
+.ci p{font-size:14px;margin:8px 0 0;color:var(--mut)}
+.ci h3{font-family:Inter,sans-serif;font-size:15px;margin-top:10px}
+/* básico */
+.basics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.bx{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.bx svg{width:56px;height:56px;display:block;margin-bottom:8px}
+.bx p{font-size:15px;margin:0}
+/* horda */
+.horde{background:#1a0b0e;color:#eeecf3}
+.horde p{color:#cfcad8}
+.hrow{display:grid;grid-template-columns:6.5em minmax(0,1fr);gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid #3c1f27}
+.hrow .lb{font-size:14px}.hrow .lb b{display:block;color:var(--gold);font-size:20px;font-variant-numeric:tabular-nums}
+.heads{display:flex;flex-wrap:wrap;gap:2px}
+.heads svg{width:18px;height:18px;animation:pop .35s ease-out both}
+@keyframes pop{from{transform:scale(0)}}
+@media (prefers-reduced-motion:reduce){.heads svg{animation:none}}
+/* passos */
+.steps{list-style:none;padding:0;margin:0;counter-reset:s;display:grid;gap:12px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.steps li::before{content:counter(s);width:44px;height:44px;border-radius:50%;background:var(--red);color:#fff;font:700 20px Cinzel,serif;display:grid;place-items:center}
+.steps b{display:block;font-size:16px}.steps span{font-size:15px;color:var(--mut)}
+/* vitória */
+.win{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.win .pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.win .plus{font:900 28px Cinzel,serif;color:var(--red2)}
+.win p{font-size:15px;margin:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+ul{margin:6px 0 0;padding-left:1.1em}li{margin:5px 0}
+dl{display:grid;grid-template-columns:minmax(0,10em) minmax(0,1fr);gap:10px 18px;margin:0}
+dt{font-weight:700;color:var(--red2)}dd{margin:0}
+.cta{display:inline-block;margin-top:6px;background:var(--red);color:#fff;text-decoration:none;font-weight:700;padding:12px 18px;border-radius:10px}
+footer{font-size:13px;color:var(--mut);text-align:center;padding:24px}
+@media(max-width:700px){.hero .in,.basics,.grid2,.win{grid-template-columns:minmax(0,1fr)}.hero .cmd{max-width:220px}dl{grid-template-columns:minmax(0,1fr)}dd{margin-bottom:8px}}
+@media print{@page{size:A4;margin:0}:root,:root[data-theme=dark]{color-scheme:light}html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact}nav{display:none}.heads svg{animation:none}.hero .in{grid-template-columns:1.3fr 1fr}.basics{grid-template-columns:repeat(3,1fr)}.cardgrid{grid-template-columns:repeat(4,1fr)}.win{grid-template-columns:1fr 1.4fr}.grid2{grid-template-columns:1fr 1fr}.win,.ci,.steps li,.bx,.hrow,header{break-inside:avoid}#turno,#vitoria{break-before:page}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="gob" viewBox="0 0 40 40"><path d="M8 8 L14 16 L10 18Z M32 8 L26 16 L30 18Z" fill="#5a0d1c"/><circle cx="20" cy="22" r="12" fill="#d23a4f"/><path d="M13 19 L18 21 M27 19 L22 21" stroke="#2a0710" stroke-width="2"/><circle cx="16" cy="22" r="1.8" fill="#ffd24a"/><circle cx="24" cy="22" r="1.8" fill="#ffd24a"/><path d="M14 28 Q20 32 26 28" stroke="#2a0710" stroke-width="1.8" fill="none"/></symbol>
+</svg>
+
+<header class="band hero"><div class="wrap in">
+  <div>
+    <div class="tag">Magic · Commander · Deck preto e vermelho</div>
+    <h1>JUDITH</h1>
+    <p>Cada mágica que você joga vira um capetinha. Os capetinhas explodem quando morrem, e o deck tem um monte de jeito de fazer eles morrerem. Mágica barata, fogo pra todo lado.</p>
+  </div>
+  <div class="cmd" data-card="Judith, Carnage Connoisseur"></div>
+</div></header>
+
+<nav><div class="scroll">
+  <a href="#basico">Magic em 1 min</a><a href="#chefe">O chefe</a><a href="#turno">Seu turno</a><a href="#cartas">Cartas</a><a href="#vitoria">Como ganhar</a><a href="#dicas">Dicas</a><a href="#glossario">Glossário</a><a href="#lista">Lista</a>
+</div></nav>
+
+<section class="band" id="basico"><div class="wrap">
+  <h2>Magic em 1 minuto</h2>
+  <p>Commander é jogado em 3 ou 4 pessoas. Cada um começa com <strong>40 de vida</strong>. Perdeu tudo, saiu. Ganha quem sobrar.</p>
+  <div class="basics">
+    <div class="bx"><svg viewBox="0 0 56 56"><path d="M6 46 L22 16 L30 28 L36 20 L50 46Z" fill="#8e1530"/><path d="M22 16 L26 24 L19 24Z" fill="#fff"/></svg><h3>Terreno = mana</h3><p>Um terreno por turno. Cada terreno dá mana da cor dele. Mana é o dinheiro pra jogar as outras cartas.</p></div>
+    <div class="bx"><svg viewBox="0 0 56 56"><rect x="8" y="10" width="20" height="28" rx="3" fill="#e9cdb8" stroke="#7d2a1c" stroke-width="2"/><rect x="24" y="22" width="28" height="20" rx="3" fill="#e9cdb8" stroke="#7d2a1c" stroke-width="2"/><path d="M30 6 a10 10 0 0 1 10 10" stroke="#8e1530" stroke-width="3" fill="none"/><path d="M40 12 l0 5 l-5 0" stroke="#8e1530" stroke-width="3" fill="none"/></svg><h3>Virar (tap)</h3><p>Pra usar um terreno ou atacar, você vira a carta de lado. Ela só desvira no começo do seu próximo turno.</p></div>
+    <div class="bx"><svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="22" fill="#e7a924"/><path d="M18 28 l7 7 l13 -15" stroke="#1c1210" stroke-width="4" fill="none"/></svg><h3>O comandante</h3><p>A Judith fica separada, fora do baralho. Você pode jogar ela a qualquer momento. Se morrer, volta pra lá e dá pra jogar de novo, só que mais caro (+2 cada vez).</p></div>
+  </div>
+</div></section>
+
+<section class="band horde" id="chefe"><div class="wrap">
+  <h2>A chefe: Judith</h2>
+  <p>Toda vez que você joga uma mágica <strong>instantânea ou feitiço</strong>, a Judith te deixa escolher: ou a mágica ganha <strong>toque mortífero e vínculo com a vida</strong>, ou você <strong>cria um Imp 2/2 que dá 2 de dano quando morre</strong>. Quase sempre: imp. Imps por turno (cada capetinha é 2 de dano guardado):</p>
+  <div id="horde"></div>
+  <p style="margin-top:14px">Por isso <strong>todo mundo vai querer matar a Judith</strong>. Joga mágica barata todo turno e deixa a mesa encher de imp.</p>
+</div></section>
+
+<section class="band" id="turno"><div class="wrap">
+  <h2>Seu turno, passo a passo</h2>
+  <ol class="steps">
+    <li><div><b>Desvira tudo e compra uma carta</b><span>Todas as suas cartas viradas voltam a ficar de pé.</span></div></li>
+    <li><div><b>Joga um terreno</b><span>Um por turno. O deck tem bastante terreno: quase sempre dá pra jogar.</span></div></li>
+    <li><div><b>Turnos 1 e 2: mana e cavar</b><span>Sol Ring, Signets, Faithless Looting. Mágica barata que acha as cartas boas.</span></div></li>
+    <li><div><b>Assim que der: joga a Judith</b><span>Depois dela, cada instantânea ou feitiço vira um imp.</span></div></li>
+    <li><div><b>Joga mágica barata todo turno</b><span>Shock, Lightning Bolt, Gut Shot: matam uma criatura inimiga E criam um imp.</span></div></li>
+    <li><div><b>Faz os imps explodirem</b><span>Culling the Weak e Fanatical Offering sacrificam um imp: ele explode (2 de dano), você ganha mana ou carta, e como são mágicas, vem um imp novo.</span></div></li>
+  </ol>
+</div></section>
+
+<section class="band alt" id="cartas"><div class="wrap">
+  <h2>As cartas que importam</h2>
+  <p>Não precisa decorar o baralho. Fica de olho nessas aqui:</p>
+  <div class="cardgrid" id="keycards"></div>
+</div></section>
+
+<section class="band" id="vitoria"><div class="wrap">
+  <h2>Como ganhar</h2>
+  <div id="wins"></div>
+</div></section>
+
+<section class="band alt" id="dicas"><div class="wrap">
+  <h2>Dicas pra não se enrolar</h2>
+  <div class="grid2">
+    <div class="bx"><h3>Mão inicial boa</h3><ul><li>Tem de 2 a 4 terrenos</li><li>Tem pelo menos 2 mágicas baratas (1 ou 2 de mana)</li><li>Se vier ruim, pode embaralhar e comprar de novo (mulligan). Pergunta pra mesa como funciona na casa.</li></ul></div>
+    <div class="bx"><h3>Cuidado</h3><ul><li>Blasphemous Act e Star of Extinction matam seus imps também, mas cada imp que morre dá 2 de dano. Às vezes vale muito.</li><li>Sem mágica na mão o deck para. Usa Faithless Looting e Cathartic Reunion pra cavar.</li><li>A Judith é o alvo de todo mundo. Swiftfoot Boots protege ela.</li></ul></div>
+  </div>
+</div></section>
+
+<section class="band" id="glossario"><div class="wrap">
+  <h2>Glossário rápido</h2>
+  <dl>
+    <dt>Ficha (token)</dt><dd>Criatura ou objeto criado por carta. Não é uma carta de verdade; usa um marcador, dado ou ficha impressa.</dd>
+    <dt>Ímpeto (haste)</dt><dd>Deixa a criatura atacar ou virar no mesmo turno em que entrou.</dd>
+    <dt>Instantânea / feitiço</dt><dd>Os dois tipos de mágica que você joga e depois vão pro cemitério. São eles que ativam a Judith.</dd>
+    <dt>Toque mortífero</dt><dd>Qualquer dano dessa fonte mata a criatura, não importa o tamanho.</dd>
+    <dt>Vínculo com a vida</dt><dd>O dano que essa fonte causa vira vida pra você.</dd>
+    <dt>Tesouro</dt><dd>Ficha que você sacrifica pra ganhar 1 mana de qualquer cor.</dd>
+    <dt>Sacrificar</dt><dd>Você mesmo manda uma criatura sua pro cemitério pra pagar um efeito.</dd>
+    <dt>Ramp</dt><dd>Carta que te dá mana extra pra jogar coisas grandes mais cedo.</dd>
+    <dt>Tutor</dt><dd>Carta que busca outra carta no seu baralho.</dd>
+    <dt>Board wipe</dt><dd>Carta que destrói todas as criaturas da mesa de uma vez.</dd>
+    <dt>Cemitério</dt><dd>Pilha de descarte: carta usada ou criatura morta vai pra lá.</dd>
+  </dl>
+</div></section>
+
+<section class="band alt" id="lista"><div class="wrap">
+  <h2>Lista completa</h2>
+  <p>Todas as cartas do deck, com imagem, no Archidekt.</p>
+  <a class="cta" href="https://archidekt.com/decks/7285751/judith_carnage_connoisseur">Abrir no Archidekt</a>
+</div></section>
+
+<footer>Deck do João Matuck</footer>
+
+<script>
+{
+  const IMG={"Culling the Weak": "5/0/50c33f18-0a5c-4e46-ab0d-6e450915594f.jpg?1783946521", "Electrickery": "5/e/5ed81ee8-d5e4-4127-876e-9bff81f9c726.jpg?1783940356", "Faithless Looting": "f/c/fc019ffa-4461-4f3d-ab8d-e4d20e77ca0c.jpg?1783903774", "Guttersnipe": "f/6/f6bb1ffc-2251-4655-b8f9-4c8047dd5d5f.jpg?1785497556", "Harmonic Prodigy": "6/3/63a565e3-d7a8-469d-898f-49fef634c107.jpg?1783903818", "Judith, Carnage Connoisseur": "3/e/3eaa19ce-cace-499e-8b23-ef9e56b23700.jpg?1783912849", "Kessig Flamebreather": "3/0/303ad78a-b02a-44dc-afe6-7f95781a5062.jpg?1783924832", "Krark, the Thumbless": "0/6/06a981cd-1951-438e-95c9-68294795638e.jpg?1783928810", "Lightning Bolt": "7/6/7673784e-db4b-43a1-8d55-1bb9fc1e284f.jpg?1783903008", "Storm-Kiln Artist": "d/a/da7ae8e0-cb6b-4386-8a30-9527d1af9be5.jpg?1783903773", "Young Pyromancer": "c/0/c0d74ecd-a595-4012-81b4-083264b40c94.jpg?1783907139"};
+  const slug=n=>n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const card=n=>`<div class="mtg"><div class="fb"><b>${esc(n)}</b><i></i><small></small></div><img src="${IMG[n]?'https://cards.scryfall.io/normal/front/'+IMG[n]:'https://api.scryfall.com/cards/named?exact='+encodeURIComponent(n)+'&format=image&version=normal'}" alt="${esc(n)}" loading="lazy" onerror="this.remove()"></div>`;
+  document.querySelectorAll('[data-card]').forEach(el=>el.innerHTML=card(el.dataset.card));
+
+  const steps=[[1, "1 mágica"], [2, "2 mágicas"], [3, "3 mágicas"], [6, "3 + Prodigy"]];
+  document.getElementById('horde').innerHTML=steps.map(([n,l],i)=>`<div class="hrow"><div class="lb">${l}<b>${n}</b></div><div class="heads">${Array.from({length:n},(_,k)=>`<svg style="animation-delay:${(i*.1+k*.01).toFixed(2)}s"><use href="#gob"/></svg>`).join('')}</div></div>`).join('');
+
+  const keys=[["Lightning Bolt", "3 de dano em qualquer alvo por 1 de mana. Mata algo e ainda cria um imp."], ["Guttersnipe", "Toda mágica instantânea ou feitiço que você joga dá 2 de dano em cada adversário."], ["Young Pyromancer", "Toda instantânea ou feitiço cria uma ficha 1/1 a mais."], ["Storm-Kiln Artist", "Toda instantânea ou feitiço cria um Tesouro, ou seja, mana pra próxima mágica."], ["Faithless Looting", "Compra 2, descarta 2. Dá pra jogar de novo do cemitério."], ["Culling the Weak", "Sacrifica uma criatura e ganha 4 de mana preto. Sacrifica um imp: ele explode."], ["Harmonic Prodigy", "A Judith é xamã. Com o Prodigy, ela dispara duas vezes: 2 imps por mágica."], ["Krark, the Thumbless", "Cara ou coroa a cada mágica. Ganhou: copia a mágica. Perdeu: ela volta pra mão pra jogar de novo."]];
+  document.getElementById('keycards').innerHTML=keys.map(([n,t])=>`<div class="ci">${card(n)}<h3>${esc(n)}</h3><p>${esc(t)}</p></div>`).join('');
+
+  const wins=[["Judith, Carnage Connoisseur", "Culling the Weak", "Máquina de imp", "Joga o Culling sacrificando um imp: ele explode (2 de dano), você ganha 4 de mana e, como o Culling é instantânea, a Judith cria um imp novo."], ["Judith, Carnage Connoisseur", "Electrickery", "Limpa a mesa", "Joga o Electrickery com overload (sobrecarga) e escolhe toque mortífero: 1 de dano em cada criatura dos adversários, e toque mortífero mata todas."], ["Guttersnipe", "Kessig Flamebreather", "Fogo em todo mundo", "Cada mágica: Guttersnipe dá 2 em cada adversário e o Flamebreather mais 1. Com 5 mágicas no turno, são 15 de dano em cada um."], ["Harmonic Prodigy", "Young Pyromancer", "Dobra tudo", "Judith, Guttersnipe, Young Pyromancer e Storm-Kiln Artist são todos xamãs. Com o Prodigy, tudo que eles fazem acontece duas vezes."]];
+  document.getElementById('wins').innerHTML=wins.map(([a,b,t,d])=>`<div class="win"><div class="pair">${card(a)}${card(b)}</div><div><h3>${esc(t)}</h3><p>${esc(d)}</p></div></div>`).join('');
+}
+</script>
+</body>
+</html>
