@@ -1,0 +1,81 @@
+/* Visual compartilhado das páginas de deck. As cores de cada deck vêm do data.js (tema). */
+:root{color-scheme:light dark;
+--bg:light-dark(#fbf4ee,#140b09);--ink:light-dark(#1c1210,#f6ece6);--mut:light-dark(#6d5a54,#bba79f);
+--red:#c4221b;--red2:light-dark(#a01a14,#ef5a46);--card:light-dark(#fff,#21130f);--line:light-dark(#ead8cf,#3a2620);
+--alt:light-dark(#f4e6dd,#1b100c);--horde:#1c1210;--hline:#3a2620;--heroP:rgba(255,255,255,.88);--gold:#e7a924}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Cinzel,Georgia,serif;line-height:1.1;text-wrap:balance;margin:0}
+h2{font-size:clamp(24px,5vw,32px);margin-bottom:12px}
+h3{font-size:18px;margin:0 0 6px}
+p{margin:0 0 12px;max-width:68ch}
+a{color:var(--red2)}
+.band{padding:clamp(28px,5vw,56px) max(5vw,18px)}
+.wrap{max-width:960px;margin:0 auto}
+.alt{background:var(--alt)}
+.hero{background:var(--red);color:#fff}
+.hero .in{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:center}
+.hero .tag{font-weight:600;opacity:.85;font-size:14px;margin-bottom:6px}
+.hero h1{font-size:clamp(40px,10vw,64px);font-weight:900}
+.hero p{font-size:17px;margin-top:12px;color:var(--heroP)}
+.hero .cmd{max-width:300px;justify-self:center;width:100%}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .scroll{display:flex;gap:4px;padding:8px max(5vw,12px);overflow-x:auto}
+nav a{flex:none;text-decoration:none;color:var(--ink);font-weight:600;font-size:14px;padding:10px 12px;border-radius:8px}
+nav a:hover,nav a:focus-visible{background:var(--line);outline:none}
+.back{display:inline-block;color:#fff;opacity:.85;text-decoration:none;font-size:14px;margin-bottom:14px}
+/* cartas */
+.mtg{position:relative;aspect-ratio:63/88;border-radius:4.5%/3.2%;overflow:hidden;background:#222;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.mtg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mtg .fb{position:absolute;inset:5%;border-radius:6px;background:var(--card);border:2px solid var(--red);display:flex;flex-direction:column;padding:8px;color:var(--ink)}
+.mtg .fb b{font-size:13px;line-height:1.2}
+.mtg .fb i{flex:1;margin:8px 0;border-radius:4px;background:var(--red)}
+.cardgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}
+.ci p{font-size:14px;margin:8px 0 0;color:var(--mut)}
+.ci h3{font-family:Inter,sans-serif;font-size:15px;margin-top:10px}
+/* básico */
+.basics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.bx{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.bx svg{width:56px;height:56px;display:block;margin-bottom:8px}
+.bx p{font-size:15px;margin:0}
+/* conta do comandante */
+.horde{background:var(--horde);color:#eeecf3}
+.horde p{color:#cfcad8}
+.hrow{display:grid;grid-template-columns:6.5em minmax(0,1fr);gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--hline)}
+.hrow .lb{font-size:14px}.hrow .lb b{display:block;color:var(--gold);font-size:20px;font-variant-numeric:tabular-nums}
+.heads{display:flex;flex-wrap:wrap;gap:2px}
+.heads svg{width:18px;height:18px;animation:pop .35s ease-out both}
+@keyframes pop{from{transform:scale(0)}}
+@media (prefers-reduced-motion:reduce){.heads svg{animation:none}}
+/* passos */
+.steps{list-style:none;padding:0;margin:0;counter-reset:s;display:grid;gap:12px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.steps li::before{content:counter(s);width:44px;height:44px;border-radius:50%;background:var(--red);color:#fff;font:700 20px Cinzel,serif;display:grid;place-items:center}
+.steps b{display:block;font-size:16px}.steps span{font-size:15px;color:var(--mut)}
+/* vitória */
+.win{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.win .pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.win p{font-size:15px;margin:0}
+/* curva de mana */
+.curve{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px;align-items:end;height:190px;margin:18px 0 6px;padding:0 2px;border-bottom:2px solid var(--line)}
+.curve div{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.curve b{font-size:15px;margin-bottom:4px;font-variant-numeric:tabular-nums}
+.curve i{display:block;width:100%;max-width:56px;border-radius:6px 6px 0 0;background:var(--red)}
+.cx{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px;text-align:center;font-size:13px;color:var(--mut);margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font:900 clamp(24px,5vw,30px) Cinzel,serif;color:var(--red2);line-height:1.1}
+.stat span{font-size:13px;color:var(--mut)}
+.types{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.types span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 10px;font-size:13px;white-space:nowrap}
+/* resto */
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+ul{margin:6px 0 0;padding-left:1.1em}li{margin:5px 0}
+dl{display:grid;grid-template-columns:minmax(0,10em) minmax(0,1fr);gap:10px 18px;margin:0}
+dt{font-weight:700;color:var(--red2)}dd{margin:0}
+.cta{display:inline-block;margin-top:6px;background:var(--red);color:#fff;text-decoration:none;font-weight:700;padding:12px 18px;border-radius:10px}
+footer{font-size:13px;color:var(--mut);text-align:center;padding:24px}
+@media(max-width:700px){.hero .in,.basics,.grid2,.win{grid-template-columns:minmax(0,1fr)}.hero .cmd{max-width:220px}dl{grid-template-columns:minmax(0,1fr)}dd{margin-bottom:8px}}
+@media(max-width:600px){.stats{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.curve{height:150px;gap:5px}.cx{gap:5px}}
+@media print{@page{size:A4;margin:0}:root,:root[data-theme=dark]{color-scheme:light}html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact}nav,.back{display:none}.heads svg{animation:none}.hero .in{grid-template-columns:1.3fr 1fr}.basics{grid-template-columns:repeat(3,1fr)}.cardgrid{grid-template-columns:repeat(4,1fr)}.win{grid-template-columns:1fr 1.4fr}.grid2{grid-template-columns:1fr 1fr}.win,.ci,.steps li,.bx,.hrow,header,.curva-sec{break-inside:avoid}#turno,#vitoria{break-before:page}}
